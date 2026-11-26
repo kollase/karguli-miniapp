@@ -42,7 +42,9 @@ export function SpeechButton({
           <Volume2 size={19} />
         )}
         {playing ? "Остановить" : label}
-        <span className="speech-lang">RU</span>
+        <span className="speech-lang">
+          {lines.every((l) => l.lang === "ka-GE") ? "KA" : "RU"}
+        </span>
       </button>
       {showTranscript && (
         <div className="dialogue-transcript">
@@ -52,7 +54,7 @@ export function SpeechButton({
               className={mine && state.index === i ? "speaking" : ""}
             >
               <span>{line.role}</span>
-              <p>{line.text}</p>
+              <p lang={line.lang === "ka-GE" ? "ka" : "ru"}>{line.text}</p>
               {mine && state.index === i && state.status === "speaking" && (
                 <span className="voice-wave" aria-label="Сейчас звучит">
                   <i />

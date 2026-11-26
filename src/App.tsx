@@ -979,6 +979,15 @@ export default function App() {
                           }
                         />
                       </button>
+                      <div className="phrase-audio">
+                        <SpeechButton
+                          lines={[{ text: p.ka, lang: "ka-GE" }]}
+                          label="Послушать"
+                          state={playback}
+                          rate={progress.speechRate}
+                          volume={progress.audioVolume}
+                        />
+                      </div>
                     </article>
                   ))}
               </div>
@@ -1206,13 +1215,27 @@ export default function App() {
                       <p className="study-pronunciation">
                         {phraseById[step.phraseId].pronunciation}
                       </p>
-                      <SpeechButton
-                        lines={[{ text: phraseById[step.phraseId].ru }]}
-                        label="Послушать перевод"
-                        state={playback}
-                        rate={progress.speechRate}
-                        volume={progress.audioVolume}
-                      />
+                      <div className="speech-pair">
+                        <SpeechButton
+                          lines={[
+                            {
+                              text: phraseById[step.phraseId].ka,
+                              lang: "ka-GE",
+                            },
+                          ]}
+                          label="По-грузински"
+                          state={playback}
+                          rate={progress.speechRate}
+                          volume={progress.audioVolume}
+                        />
+                        <SpeechButton
+                          lines={[{ text: phraseById[step.phraseId].ru }]}
+                          label="Русский перевод"
+                          state={playback}
+                          rate={progress.speechRate}
+                          volume={progress.audioVolume}
+                        />
+                      </div>
                       <div className="culture-hint">
                         <Leaf size={23} />
                         <p>{phraseById[step.phraseId].hint}</p>
@@ -1248,6 +1271,19 @@ export default function App() {
                           <span className="phrase-category">СОБЕСЕДНИК</span>
                           <p lang="ka">{step.speaker}</p>
                           <small>{step.speakerTranslation}</small>
+                          <SpeechButton
+                            lines={[
+                              {
+                                text: step.speaker,
+                                lang: "ka-GE",
+                                role: "Собеседник",
+                              },
+                            ]}
+                            label="Реплика по-грузински"
+                            state={playback}
+                            rate={progress.speechRate}
+                            volume={progress.audioVolume}
+                          />
                           {step.speakerTranslation && (
                             <SpeechButton
                               lines={[
@@ -1256,7 +1292,7 @@ export default function App() {
                                   role: "Собеседник",
                                 },
                               ]}
-                              label="Послушать реплику"
+                              label="Русский перевод реплики"
                               state={playback}
                               rate={progress.speechRate}
                               volume={progress.audioVolume}
@@ -1317,6 +1353,33 @@ export default function App() {
                             {phraseById[step.phraseId].pronunciation}
                           </p>
                           <p>{step.explanation}</p>
+                          <SpeechButton
+                            lines={[
+                              ...(step.speaker
+                                ? [
+                                    {
+                                      text: step.speaker,
+                                      lang: "ka-GE" as const,
+                                      role: "Собеседник",
+                                    },
+                                  ]
+                                : []),
+                              {
+                                text: phraseById[step.phraseId].ka,
+                                lang: "ka-GE",
+                                role: "Вы",
+                              },
+                            ]}
+                            label={
+                              step.speaker
+                                ? "Диалог по-грузински"
+                                : "Ответ по-грузински"
+                            }
+                            showTranscript
+                            state={playback}
+                            rate={progress.speechRate}
+                            volume={progress.audioVolume}
+                          />
                           {step.type === "quiz" && (
                             <SpeechButton
                               lines={[
@@ -1335,10 +1398,9 @@ export default function App() {
                               ]}
                               label={
                                 step.speakerTranslation
-                                  ? "Послушать диалог"
-                                  : "Послушать ответ"
+                                  ? "Диалог в переводе"
+                                  : "Ответ в переводе"
                               }
-                              showTranscript
                               state={playback}
                               rate={progress.speechRate}
                               volume={progress.audioVolume}
@@ -1352,7 +1414,7 @@ export default function App() {
                 <div className="lesson-next">
                   <span>
                     {step.type === "study"
-                      ? "Озвучка — русский перевод, не грузинское произношение"
+                      ? "Сначала послушайте, затем попробуйте повторить"
                       : selected
                         ? "Ошибаться — часть знакомства"
                         : "Выберите один ответ"}
@@ -1472,6 +1534,13 @@ export default function App() {
             <span lang="ka">{letter.word}</span>
             <span>{letter.meaning}</span>
           </div>
+          <SpeechButton
+            lines={[{ text: letter.word, lang: "ka-GE" }]}
+            label="Послушать слово"
+            state={playback}
+            rate={progress.speechRate}
+            volume={progress.audioVolume}
+          />
           <p className="modal-description">
             {["ღ", "ყ", "ჰ"].includes(letter.letter)
               ? "У этого звука нет точного русского аналога. Текстовая подсказка поможет узнать букву, но не заменит практику произношения."
@@ -1594,8 +1663,15 @@ export default function App() {
                 Проверить сигналы
               </button>
               <SpeechButton
+                lines={[{ text: "გამარჯობა", lang: "ka-GE" }]}
+                label="Грузинский голос"
+                state={playback}
+                rate={progress.speechRate}
+                volume={progress.audioVolume}
+              />
+              <SpeechButton
                 lines={[{ text: "Здравствуйте! Давайте познакомимся." }]}
-                label="Проверить голос"
+                label="Русский голос"
                 state={playback}
                 rate={progress.speechRate}
                 volume={progress.audioVolume}
@@ -1605,8 +1681,9 @@ export default function App() {
           <div className="audio-note">
             <Info size={19} />
             <p>
-              Синтезированный голос читает русский перевод. Это помогает
-              представить разговор, но не учит грузинскому произношению.
+              Грузинские фразы читает синтезированный грузинский голос Natia,
+              перевод — русский голос. Перед учебным релизом произношение должен
+              проверить преподаватель.
             </p>
           </div>
         </Modal>

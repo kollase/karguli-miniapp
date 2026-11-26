@@ -4,6 +4,7 @@ export type SoundEffect = "tap" | "correct" | "incorrect" | "complete";
 export interface SpeechLine {
   text: string;
   role?: string;
+  lang?: "ru-RU" | "ka-GE";
 }
 export interface PlaybackState {
   key: string;
@@ -13,7 +14,7 @@ export interface PlaybackState {
 }
 const idle: PlaybackState = { key: "", status: "idle", index: -1, error: "" };
 export const speechKey = (lines: SpeechLine[]) =>
-  lines.map((l) => l.text).join("\n");
+  lines.map((l) => `${l.lang ?? "ru-RU"}:${l.text}`).join("\n");
 
 // Original, short UI sounds, synthesized locally. No external audio requests.
 const melodies: Record<SoundEffect, [number, number, number][]> = {
@@ -170,9 +171,24 @@ export class AppAudio {
               throw new Error(
                 "Браузер заблокировал звук. Нажмите «Послушать» ещё раз или проверьте настройки звука.",
               );
-            await this.synthesize(lines[i].text, rate, volume, i, onStart);
+            await this.synthesize(
+              lines[i].text,
+              lines[i].lang ?? "ru-RU",
+              rate,
+              volume,
+              i,
+              onStart,
+            );
           }
-        } else await this.synthesize(lines[i].text, rate, volume, i, onStart);
+        } else
+          await this.synthesize(
+            lines[i].text,
+            lines[i].lang ?? "ru-RU",
+            rate,
+            volume,
+            i,
+            onStart,
+          );
       }
       if (run === this.run) this.update({ ...idle });
     } catch (error) {
@@ -231,6 +247,7 @@ export class AppAudio {
   }
   private synthesize(
     text: string,
+    lang: "ru-RU" | "ka-GE",
     rate: number,
     volume: number,
     roleIndex: number,
@@ -250,18 +267,20 @@ export class AppAudio {
       }
       const voices = window.speechSynthesis
         .getVoices()
-        .filter((v) => /^ru(?:[-_]|$)/i.test(v.lang));
+        .filter(
+          (v) => v.lang.toLowerCase().split(/[-_]/)[0] === lang.split("-")[0],
+        );
       if (!voices.length) {
         reject(
           new Error(
-            "Не удалось загрузить аудио, а русский голос на устройстве не найден. Проверьте соединение и попробуйте снова.",
+            `Не удалось загрузить аудио, а ${lang === "ka-GE" ? "грузинский" : "русский"} голос на устройстве не найден. Проверьте соединение и попробуйте снова.`,
           ),
         );
         return;
       }
       const utterance = new SpeechSynthesisUtterance(text);
       this.utterance = utterance;
-      utterance.lang = "ru-RU";
+      utterance.lang = lang;
       utterance.voice = voices[roleIndex % voices.length];
       utterance.rate = rate;
       utterance.volume = volume;

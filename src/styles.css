@@ -2424,6 +2424,41 @@ h1 {
 .speech-control {
   margin: 12px 0 20px;
 }
+.speech-pair {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 12px 0 24px;
+}
+.speech-pair .speech-control {
+  margin: 0;
+}
+.speech-pair .speech-control:first-child .speech-button {
+  background: var(--hero);
+  border-color: var(--sage);
+}
+.dialogue-transcript p[lang="ka"] {
+  font-size: 18px;
+  line-height: 1.8;
+}
+.phrase-card {
+  display: flex;
+  flex-direction: column;
+}
+.phrase-open {
+  height: auto;
+  flex: 1;
+}
+.phrase-audio {
+  padding: 0 22px 18px;
+}
+.phrase-audio .speech-control {
+  margin: 0;
+}
+.phrase-audio .speech-button {
+  font-size: 12px;
+}
 .speech-button {
   display: inline-flex;
   align-items: center;

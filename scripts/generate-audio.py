@@ -1,17 +1,19 @@
-"""Generate shipped speech assets. Usage: python scripts/generate-audio.py /path/to/model.onnx"""
+"""Generate speech assets: python scripts/generate-audio.py /path/to/model.onnx [ru|ka]"""
 import json
 from pathlib import Path
 import subprocess
 import sys
 import tempfile
 import wave
-from piper import PiperVoice, SynthesisConfig
 import onnxruntime
-
 onnxruntime.disable_telemetry_events()
+from piper import PiperVoice, SynthesisConfig
 
 root=Path(__file__).resolve().parents[1]
-target=root/'public/audio/ru'
+language=sys.argv[2] if len(sys.argv)>2 else 'ru'
+if language not in ('ru','ka'):
+    raise SystemExit('Language must be ru or ka')
+target=root/'public/audio'/language
 manifest=json.loads((target/'manifest.json').read_text())
 voice=PiperVoice.load(sys.argv[1])
 config=SynthesisConfig(length_scale=1.02,noise_scale=.55,noise_w_scale=.65)

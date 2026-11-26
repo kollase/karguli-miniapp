@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync, statSync } from "node:fs";
 import { AppAudio, speechKey } from "./audio.ts";
 import { audioClips } from "../data/audio-clips.ts";
-import { phrases, lessons } from "../data/lessons.ts";
+import { phrases, lessons, alphabet } from "../data/lessons.ts";
 
 class FakeAudio {
   static instances: FakeAudio[] = [];
@@ -68,7 +68,27 @@ test("Russian recordings cover all study cards, questions, dialogue cues and set
       "utf8",
     ),
   );
-  assert.equal(manifest.length, Object.keys(audioClips).length);
+  assert.equal(
+    manifest.length,
+    Object.keys(audioClips).filter((text) => audioClips[text].includes("/ru/"))
+      .length,
+  );
+});
+test("Georgian recordings cover original phrases, dialogue cues and alphabet words", () => {
+  const expected = [
+    ...phrases.map((p) => p.ka),
+    ...alphabet.map((a) => a.word),
+  ];
+  for (const lesson of lessons)
+    for (const step of lesson.steps)
+      if (step.type !== "study" && step.speaker) expected.push(step.speaker);
+  for (const text of expected) {
+    assert.ok(audioClips[text]?.startsWith("/audio/ka/"), text);
+    assert.ok(
+      statSync(new URL(`../../public${audioClips[text]}`, import.meta.url))
+        .size > 1000,
+    );
+  }
 });
 test("two dialogue lines reuse one media element and finish in order", async () => {
   const player = setup(),
@@ -120,7 +140,7 @@ test("same speech button stops playback; unsupported sound effects are harmless"
   const player = setup();
   FakeAudio.autoEnd = false;
   const lines = [{ text: "Здравствуйте" }];
-  assert.equal(speechKey(lines), "Здравствуйте");
+  assert.equal(speechKey(lines), "ru-RU:Здравствуйте");
   const pending = player.speak(lines, 1, 0.5);
   await Promise.resolve();
   await player.speak(lines, 1, 0.5);
@@ -129,4 +149,41 @@ test("same speech button stops playback; unsupported sound effects are harmless"
   player.configure(false, 0.5);
   await player.effect("incorrect");
   assert.equal(FakeAudio.instances[0].paused, true);
+});
+test("Georgian dialogue uses Georgian assets and its own playback identity", async () => {
+  const player = setup();
+  await player.speak(
+    [
+      { text: "გამარჯობა", lang: "ka-GE" },
+      { text: "დიდი მადლობა", lang: "ka-GE" },
+    ],
+    1,
+    0.45,
+  );
+  assert.equal(FakeAudio.instances.length, 1);
+  assert.equal(FakeAudio.instances[0].src, audioClips["დიდი მადლობა"]);
+  assert.notEqual(
+    speechKey([{ text: "x", lang: "ka-GE" }]),
+    speechKey([{ text: "x", lang: "ru-RU" }]),
+  );
+});
+test("Georgian speech never falls back to a Russian system voice", async () => {
+  const player = setup();
+  FakeAudio.fail = true;
+  let spoke = false,
+    state = { status: "", error: "" };
+  Object.assign(globalThis.window, {
+    SpeechSynthesisUtterance: function () {},
+    speechSynthesis: {
+      getVoices: () => [{ lang: "ru-RU" }],
+      speak: () => {
+        spoke = true;
+      },
+    },
+  });
+  player.subscribe((s) => (state = s));
+  await player.speak([{ text: "გამარჯობა", lang: "ka-GE" }], 1, 0.45);
+  assert.equal(spoke, false);
+  assert.equal(state.status, "error");
+  assert.match(state.error, /грузинский/);
 });
