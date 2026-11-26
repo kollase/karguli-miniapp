@@ -18,6 +18,41 @@ test("damaged storage and invalid nested values recover safely", () => {
     freshProgress(),
   );
 });
+test("audio settings migrate without losing existing progress and validate corrupt preferences", () => {
+  const old = JSON.stringify({
+    version: 1,
+    completed: ["basics-1"],
+    favorites: ["hello"],
+    letters: ["ა"],
+  });
+  const migrated = parseProgress(old);
+  assert.equal(migrated.soundEffects, true);
+  assert.equal(migrated.audioVolume, 0.45);
+  assert.deepEqual(migrated.completed, ["basics-1"]);
+  assert.deepEqual(migrated.favorites, ["hello"]);
+  const saved = parseProgress(
+    JSON.stringify({
+      ...migrated,
+      soundEffects: false,
+      audioVolume: 0.7,
+      speechRate: 0.85,
+    }),
+  );
+  assert.equal(saved.soundEffects, false);
+  assert.equal(saved.audioVolume, 0.7);
+  assert.equal(saved.speechRate, 0.85);
+  const corrupt = parseProgress(
+    JSON.stringify({
+      ...saved,
+      soundEffects: "bad",
+      audioVolume: 5,
+      speechRate: 9,
+    }),
+  );
+  assert.equal(corrupt.soundEffects, true);
+  assert.equal(corrupt.audioVolume, 1);
+  assert.equal(corrupt.speechRate, 1);
+});
 test("mastery requires successful retrieval on different days", () => {
   let p = answer(freshProgress(), "hello", true, "2026-11-26");
   assert.equal(p.phrases.hello.level, 1);

@@ -22,6 +22,8 @@ import {
   Sparkles,
   Sun,
   Truck,
+  Volume2,
+  VolumeX,
   X,
 } from "lucide-react";
 import {
@@ -48,6 +50,8 @@ import {
   type Progress,
 } from "./lib/progress";
 import { haptic, telegram } from "./lib/telegram";
+import { appAudio, type PlaybackState } from "./lib/audio";
+import { SpeechButton } from "./components/SpeechButton";
 
 type Page = "learn" | "cheat" | "alphabet" | "lesson";
 const scenarioIcons = {
@@ -290,6 +294,7 @@ export default function App() {
     [shown, setShown] = useState<Phrase | null>(null),
     [letter, setLetter] = useState<AlphabetLetter | null>(null),
     [info, setInfo] = useState(false),
+    [audioOpen, setAudioOpen] = useState(false),
     [copied, setCopied] = useState(false),
     [copyError, setCopyError] = useState(false),
     [storageError, setStorageError] = useState(false),
@@ -304,6 +309,38 @@ export default function App() {
       review: boolean;
     } | null>(null),
     [clock, setClock] = useState(() => localDay());
+  const [playback, setPlayback] = useState<PlaybackState>({
+    key: "",
+    status: "idle",
+    index: -1,
+    error: "",
+  });
+  useEffect(() => appAudio.subscribe(setPlayback), []);
+  useEffect(() => {
+    appAudio.configure(progress.soundEffects, progress.audioVolume);
+  }, [progress.soundEffects, progress.audioVolume]);
+  useEffect(() => {
+    appAudio.stop();
+  }, [
+    page,
+    progress.active?.lessonId,
+    progress.active?.index,
+    audioOpen,
+    shown,
+    info,
+    scenario,
+    letter,
+  ]);
+  useEffect(() => {
+    const hide = () => {
+      if (document.hidden) appAudio.silence();
+    };
+    document.addEventListener("visibilitychange", hide);
+    return () => {
+      document.removeEventListener("visibilitychange", hide);
+      appAudio.silence();
+    };
+  }, []);
   useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
@@ -353,11 +390,12 @@ export default function App() {
     setLetter(null);
     setScenario(null);
     setInfo(false);
+    setAudioOpen(false);
     setCopied(false);
     setCopyError(false);
   };
   const back = () => {
-    if (shown || letter || scenario || info) closeModal();
+    if (shown || letter || scenario || info || audioOpen) closeModal();
     else if (page === "lesson") {
       setPage("learn");
       setResult(null);
@@ -368,7 +406,12 @@ export default function App() {
     const button = telegram()?.BackButton;
     if (!button) return;
     const visible =
-      page !== "learn" || !!shown || !!letter || !!scenario || info;
+      page !== "learn" ||
+      !!shown ||
+      !!letter ||
+      !!scenario ||
+      info ||
+      audioOpen;
     visible ? button.show() : button.hide();
     button.onClick(back);
     return () => button.offClick(back);
@@ -401,6 +444,7 @@ export default function App() {
     active?.lessonId === "review" ? reviewSteps : (currentLesson?.steps ?? []);
   const step = steps[active?.index ?? 0];
   const start = (lesson: Lesson) => {
+    void appAudio.effect("tap");
     setProgress((p) => ({
       ...p,
       active: { lessonId: lesson.id, index: 0, correct: [], errors: [] },
@@ -440,6 +484,8 @@ export default function App() {
   };
   const next = () => {
     if (!active || !step) return;
+    appAudio.stop();
+    void appAudio.effect(active.index + 1 >= steps.length ? "complete" : "tap");
     let p = progress;
     if (step.type === "study") p = encounter(p, step.phraseId);
     if (active.index + 1 >= steps.length) {
@@ -460,6 +506,8 @@ export default function App() {
   const choose = (id: string) => {
     if (selected || !active || !step) return;
     const correct = id === step.phraseId;
+    appAudio.stop();
+    void appAudio.effect(correct ? "correct" : "incorrect");
     haptic(correct);
     setSelected(id);
     setProgress((p) => {
@@ -564,9 +612,7 @@ export default function App() {
               <n.icon size={21} />
               {n.label}
               {n.id === "cheat" && (
-                <span className="nav-count">
-                  {phrases.length}
-                </span>
+                <span className="nav-count">{phrases.length}</span>
               )}
             </button>
           ))}
@@ -600,6 +646,18 @@ export default function App() {
               <Flame size={18} />
               {streak(progress.activityDays, clock)} <span>дн. подряд</span>
             </span>
+            <button
+              className={`icon-button sound-settings-trigger ${progress.soundEffects ? "sound-on" : ""}`}
+              onClick={() => setAudioOpen(true)}
+              aria-label="Настройки звука"
+              title="Настройки звука"
+            >
+              {progress.soundEffects ? (
+                <Volume2 size={20} />
+              ) : (
+                <VolumeX size={20} />
+              )}
+            </button>
             <button
               className="icon-button"
               aria-label={`Тема: ${progress.theme === "auto" ? "системная" : progress.theme === "light" ? "светлая" : "тёмная"}. Переключить тему`}
@@ -682,7 +740,7 @@ export default function App() {
                     <span className="button-time">2–3 мин</span>
                   </button>
                   <span className="hero-footnote">
-                    <Check size={14} /> Без звука. В своём темпе.
+                    <Check size={14} /> Можно без звука. В своём темпе.
                   </span>
                 </div>
                 <CityIllustration />
@@ -1148,6 +1206,13 @@ export default function App() {
                       <p className="study-pronunciation">
                         {phraseById[step.phraseId].pronunciation}
                       </p>
+                      <SpeechButton
+                        lines={[{ text: phraseById[step.phraseId].ru }]}
+                        label="Послушать перевод"
+                        state={playback}
+                        rate={progress.speechRate}
+                        volume={progress.audioVolume}
+                      />
                       <div className="culture-hint">
                         <Leaf size={23} />
                         <p>{phraseById[step.phraseId].hint}</p>
@@ -1183,7 +1248,30 @@ export default function App() {
                           <span className="phrase-category">СОБЕСЕДНИК</span>
                           <p lang="ka">{step.speaker}</p>
                           <small>{step.speakerTranslation}</small>
+                          {step.speakerTranslation && (
+                            <SpeechButton
+                              lines={[
+                                {
+                                  text: step.speakerTranslation,
+                                  role: "Собеседник",
+                                },
+                              ]}
+                              label="Послушать реплику"
+                              state={playback}
+                              rate={progress.speechRate}
+                              volume={progress.audioVolume}
+                            />
+                          )}
                         </div>
+                      )}
+                      {step.type === "quiz" && !step.speaker && (
+                        <SpeechButton
+                          lines={[{ text: step.prompt }]}
+                          label="Послушать ситуацию"
+                          state={playback}
+                          rate={progress.speechRate}
+                          volume={progress.audioVolume}
+                        />
                       )}
                       <div className="answer-options">
                         {[...step.options]
@@ -1229,6 +1317,33 @@ export default function App() {
                             {phraseById[step.phraseId].pronunciation}
                           </p>
                           <p>{step.explanation}</p>
+                          {step.type === "quiz" && (
+                            <SpeechButton
+                              lines={[
+                                ...(step.speakerTranslation
+                                  ? [
+                                      {
+                                        text: step.speakerTranslation,
+                                        role: "Собеседник",
+                                      },
+                                    ]
+                                  : [{ text: step.prompt, role: "Ситуация" }]),
+                                {
+                                  text: phraseById[step.phraseId].ru,
+                                  role: "Вы",
+                                },
+                              ]}
+                              label={
+                                step.speakerTranslation
+                                  ? "Послушать диалог"
+                                  : "Послушать ответ"
+                              }
+                              showTranscript
+                              state={playback}
+                              rate={progress.speechRate}
+                              volume={progress.audioVolume}
+                            />
+                          )}
                         </div>
                       )}
                     </>
@@ -1237,7 +1352,7 @@ export default function App() {
                 <div className="lesson-next">
                   <span>
                     {step.type === "study"
-                      ? "Можно без звука и без спешки"
+                      ? "Озвучка — русский перевод, не грузинское произношение"
                       : selected
                         ? "Ошибаться — часть знакомства"
                         : "Выберите один ответ"}
@@ -1390,6 +1505,108 @@ export default function App() {
             <p>
               После двух верных ответов в разные дни. Ошибки возвращаются в
               повторение; просмотр карточки сам по себе не считается знанием.
+            </p>
+          </div>
+        </Modal>
+      )}
+      {audioOpen && (
+        <Modal onClose={closeModal} label="Настройки звука">
+          <span className="audio-modal-icon">
+            <Volume2 size={33} />
+          </span>
+          <div className="eyebrow">НЕМНОГО БОЛЬШЕ ЖИЗНИ</div>
+          <h2>У каждого шага свой звук</h2>
+          <p className="modal-description">
+            Мягкие сигналы для ответов и маленькая мелодия в конце урока. Речь —
+            только по вашему нажатию.
+          </p>
+          <div className="audio-settings">
+            <label className="audio-setting-row">
+              <span>
+                <strong>Звуки урока</strong>
+                <small>Ответы, переходы и завершение</small>
+              </span>
+              <input
+                type="checkbox"
+                checked={progress.soundEffects}
+                onChange={(e) => {
+                  const enabled = e.target.checked;
+                  appAudio.configure(enabled, progress.audioVolume);
+                  if (enabled) void appAudio.effect("correct");
+                  setProgress((p) => ({ ...p, soundEffects: enabled }));
+                }}
+              />
+            </label>
+            <label className="audio-volume">
+              <span>
+                Громкость{" "}
+                <strong>{Math.round(progress.audioVolume * 100)}%</strong>
+              </span>
+              <input
+                aria-label="Громкость звука"
+                type="range"
+                min="10"
+                max="100"
+                step="5"
+                value={Math.round(progress.audioVolume * 100)}
+                onChange={(e) => {
+                  appAudio.stop();
+                  setProgress((p) => ({
+                    ...p,
+                    audioVolume: Number(e.target.value) / 100,
+                  }));
+                }}
+              />
+            </label>
+            <div className="audio-speed">
+              <span>Скорость речи</span>
+              <div>
+                {[
+                  { value: 0.85, label: "Помедленнее" },
+                  { value: 1, label: "Обычно" },
+                  { value: 1.15, label: "Побыстрее" },
+                ].map((r) => (
+                  <button
+                    key={r.value}
+                    aria-pressed={progress.speechRate === r.value}
+                    className={
+                      progress.speechRate === r.value ? "selected" : ""
+                    }
+                    onClick={() => {
+                      appAudio.stop();
+                      setProgress((p) => ({ ...p, speechRate: r.value }));
+                    }}
+                  >
+                    {r.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="audio-test-buttons">
+              <button
+                className="secondary-button"
+                disabled={!progress.soundEffects}
+                onClick={() => {
+                  appAudio.stop();
+                  void appAudio.effect("complete");
+                }}
+              >
+                Проверить сигналы
+              </button>
+              <SpeechButton
+                lines={[{ text: "Здравствуйте! Давайте познакомимся." }]}
+                label="Проверить голос"
+                state={playback}
+                rate={progress.speechRate}
+                volume={progress.audioVolume}
+              />
+            </div>
+          </div>
+          <div className="audio-note">
+            <Info size={19} />
+            <p>
+              Синтезированный голос читает русский перевод. Это помогает
+              представить разговор, но не учит грузинскому произношению.
             </p>
           </div>
         </Modal>
