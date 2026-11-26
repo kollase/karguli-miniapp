@@ -565,7 +565,7 @@ export default function App() {
               {n.label}
               {n.id === "cheat" && (
                 <span className="nav-count">
-                  {phrases.filter((p) => p.favoriteCandidate).length}
+                  {phrases.length}
                 </span>
               )}
             </button>
