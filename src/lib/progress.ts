@@ -180,3 +180,29 @@ export function complete(
 export function confirmLetterPractice(p: Progress, letters: string[]): Progress {
   return { ...p, checkedLetters: [...new Set([...p.checkedLetters, ...letters])] };
 }
+
+export function assemblyHint(p: Progress, stepId: string): Progress {
+  if (!p.active) return p;
+  return { ...p, active: { ...p.active, errors: [...new Set([...p.active.errors, stepId])] } };
+}
+
+export function assemblyAnswer(
+  p: Progress,
+  stepId: string,
+  phraseId: string,
+  correct: boolean,
+  today = localDay(),
+): Progress {
+  const active = p.active;
+  if (!active) return p;
+  const assisted = active.errors.includes(stepId);
+  const updated = answer(p, phraseId, correct && !assisted, today);
+  return {
+    ...updated,
+    active: {
+      ...active,
+      correct: correct && !assisted ? [...new Set([...active.correct, stepId])] : active.correct,
+      errors: correct ? active.errors : [...new Set([...active.errors, stepId])],
+    },
+  };
+}

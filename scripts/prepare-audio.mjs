@@ -4,7 +4,7 @@ import { phrases, lessons, alphabet } from "../src/data/lessons.ts";
 const texts = new Set(phrases.map((p) => p.ka));
 for (const lesson of lessons)
   for (const step of lesson.steps)
-    if (step.type !== "study" && step.speaker) texts.add(step.speaker);
+    if ((step.type === "quiz" || step.type === "sign") && step.speaker) texts.add(step.speaker);
 for (const letter of alphabet) texts.add(letter.word);
 const manifest = Array.from(texts, (text) => ({
   text,

@@ -40,6 +40,8 @@ import {
 } from "./data/lessons";
 import {
   answer,
+  assemblyAnswer,
+  assemblyHint,
   complete,
   confirmLetterPractice,
   encounter,
@@ -54,6 +56,7 @@ import { haptic, telegram } from "./lib/telegram";
 import { appAudio, type PlaybackState } from "./lib/audio";
 import { SpeechButton } from "./components/SpeechButton";
 import { AlphabetTrainer } from "./components/AlphabetTrainer";
+import { PhraseBuilder } from "./components/PhraseBuilder";
 import { alphabetPair } from "./lib/alphabet";
 
 type Page = "learn" | "cheat" | "alphabet" | "lesson";
@@ -1137,7 +1140,7 @@ export default function App() {
                   попытки.
                   <br />
                   {result.correct < result.total
-                    ? "Фразы с ошибками остались в повторении."
+                    ? "Фразы с ошибками или подсказками остались в повторении."
                     : "Вернитесь завтра: проверим, что осталось в памяти."}
                 </p>
                 {!!result.letters.length && (
@@ -1218,7 +1221,9 @@ export default function App() {
                       ? "ЗНАКОМИМСЯ С ФРАЗОЙ"
                       : step.type === "sign"
                         ? "РАСШИФРУЙТЕ ВЫВЕСКУ"
-                        : "ВАША ОЧЕРЕДЬ ОТВЕТИТЬ"}
+                        : step.type === "assemble"
+                          ? "СОБЕРИТЕ ФРАЗУ"
+                          : "ВАША ОЧЕРЕДЬ ОТВЕТИТЬ"}
                   </span>
                   {step.type === "study" ? (
                     <>
@@ -1264,6 +1269,21 @@ export default function App() {
                         </button>
                       </div>
                     </>
+                  ) : step.type === "assemble" ? (
+                    <PhraseBuilder
+                      key={step.id}
+                      phrase={phraseById[step.phraseId]}
+                      chunks={step.chunks}
+                      stepId={step.id}
+                      state={playback}
+                      volume={progress.audioVolume}
+                      assisted={active.errors.includes(step.id)}
+                      onHint={() => setProgress((p) => assemblyHint(p, step.id))}
+                      onAttempt={(correct) => {
+                        setProgress((p) => assemblyAnswer(p, step.id, step.phraseId, correct));
+                        setSelected(correct ? step.phraseId : null);
+                      }}
+                    />
                   ) : (
                     <>
                       <h2 className="quiz-prompt">{step.prompt}</h2>
@@ -1371,9 +1391,11 @@ export default function App() {
                   <span>
                     {step.type === "study"
                       ? "Сначала послушайте, затем попробуйте повторить"
-                      : selected
-                        ? "Ошибаться — часть знакомства"
-                        : "Выберите один ответ"}
+                      : step.type === "assemble"
+                        ? selected ? "Получилось. Послушайте фразу ещё раз." : "Соберите фразу и нажмите «Проверить»"
+                        : selected
+                          ? "Ошибаться — часть знакомства"
+                          : "Выберите один ответ"}
                   </span>
                   <button
                     className="primary-button"

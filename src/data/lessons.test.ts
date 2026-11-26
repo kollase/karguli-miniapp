@@ -6,6 +6,7 @@ import {
   phrases,
   phraseById,
   scenarios,
+  phraseChunks,
 } from "./lessons.ts";
 test("all five scenarios contain eight reusable phrases and two short lessons", () => {
   assert.equal(phrases.length, 40);
@@ -21,7 +22,7 @@ test("every exercise has exactly three valid, unique options and its correct ans
   for (const l of lessons)
     for (const step of l.steps) {
       assert.ok(phraseById[step.phraseId]);
-      if (step.type !== "study") {
+      if (step.type === "quiz" || step.type === "sign") {
         assert.equal(step.options.length, 3);
         assert.equal(new Set(step.options).size, 3);
         assert.ok(step.options.includes(step.phraseId));
@@ -45,8 +46,9 @@ test("lessons only test phrases introduced earlier in the same scenario", () => 
           introduced.has(step.phraseId),
           `${lesson.id}: ${step.phraseId} was tested before being introduced`,
         );
-        for (const id of step.options)
-          assert.equal(phraseById[id].scenario, lesson.scenarioId);
+        if (step.type !== "assemble")
+          for (const id of step.options)
+            assert.equal(phraseById[id].scenario, lesson.scenarioId);
         if (step.type === "sign") assert.equal(lesson.scenarioId, "signs");
       }
     }
@@ -62,4 +64,19 @@ test("alphabet contains all 33 distinct Mkhedruli letters with examples", () => 
   for (const s of scenarios)
     for (const letter of s.letters)
       assert.ok(alphabet.some((a) => a.letter === letter));
+});
+
+test("every conversational lesson includes assembly of an introduced phrase with intact chunks", () => {
+  for (const [id, chunks] of Object.entries(phraseChunks)) {
+    assert.ok(chunks.length >= 2 && chunks.length <= 5);
+    assert.equal(chunks.join(" "), phraseById[id].ka);
+  }
+  for (const lesson of lessons) {
+    const assembly = lesson.steps.filter((s) => s.type === "assemble");
+    assert.equal(assembly.length, lesson.scenarioId === "signs" ? 0 : 1);
+    for (const step of assembly) {
+      assert.equal(step.chunks.join(" "), phraseById[step.phraseId].ka);
+      assert.ok(lesson.steps.slice(0, lesson.steps.indexOf(step)).some((s) => s.type === "study" && s.phraseId === step.phraseId));
+    }
+  }
 });

@@ -2824,3 +2824,31 @@ h1 {
 .alphabet-trainer .step-tag { margin-bottom: 0; font-size: 12px; letter-spacing: 1px; }
 .alphabet-trainer h2 { margin: 12px 0; }
 .new-letters > .primary-button { width: 100%; height: auto; min-height: 48px; background: var(--sage); color: var(--bg); }
+
+/* Tap-to-build phrases; tiles keep their places in the bank. */
+.builder-instruction { color: var(--muted); font-size: 16px; line-height: 1.65; margin: -10px 0 20px; }
+.builder-answer { min-height: 104px; padding: 15px; border: 1.5px dashed var(--sage); border-radius: 14px; background: var(--surface); display: flex; align-items: center; align-content: center; gap: 9px; flex-wrap: wrap; }
+.builder-answer.solved { border-style: solid; background: var(--green); }
+.builder-placeholder { font-size: 16px; color: var(--muted); }
+.word-tile { display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 48px; padding: 10px 15px; border: 1px solid var(--line); border-bottom-width: 3px; border-radius: 10px; background: var(--bg); color: var(--text); font-size: 19px; line-height: 1.5; overflow-wrap: anywhere; max-width: 100%; transition: transform .15s, background .15s; }
+.word-tile:hover:not(:disabled) { border-color: var(--sage); transform: translateY(-2px); }
+.word-tile.chosen-tile { border-color: var(--sage); }
+.word-tile:disabled { opacity: 1; }
+.word-tile.used-tile { opacity: .3; border-style: dashed; border-bottom-width: 1px; }
+.builder-tools { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; margin: 8px 0 16px; }
+.builder-tools > span { color: var(--muted); font-size: 14px; }
+.builder-tools .text-button { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; font-size: 14px; }
+.builder-bank { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; padding: 18px 0; min-height: 88px; }
+.builder-actions { display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 16px; }
+.builder-actions > .primary-button { width: 100%; }
+.builder-actions > .text-button { min-height: 44px; font-size: 15px; }
+.builder-hint { margin-top: 14px; padding: 18px; border-radius: 12px; background: var(--yellow); }
+.builder-hint > span { display: block; font-size: 23px; line-height: 1.6; }
+.builder-hint > p { font-size: 16px; line-height: 1.6; margin: 10px 0 16px; }
+.phrase-builder .answer-feedback strong { display: flex; align-items: center; gap: 7px; font-size: 16px; }
+.phrase-builder .answer-feedback p { font-size: 15px; }
+.phrase-builder .builder-pronunciation { color: var(--text); margin: 12px 0; }
+@media (max-width: 600px) {
+  .word-tile { padding: 9px 12px; font-size: 18px; }
+  .builder-answer { padding: 12px; }
+}

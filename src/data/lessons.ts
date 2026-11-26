@@ -385,6 +385,13 @@ export type Step =
   | { id: string; type: "study"; phraseId: string }
   | {
       id: string;
+      type: "assemble";
+      phraseId: string;
+      prompt: string;
+      chunks: string[];
+    }
+  | {
+      id: string;
       type: "quiz" | "sign";
       phraseId: string;
       prompt: string;
@@ -440,6 +447,17 @@ const dialogue: Record<string, [string, string]> = {
   americano: ["რას ინებებთ?", "Что будете заказывать?"],
   takeaway: ["აქ თუ წასაღებად?", "Здесь или с собой?"],
 };
+// Authored boundaries keep useful expressions together, including punctuation.
+export const phraseChunks: Record<string, string[]> = {
+  thanks: ["დიდი", "მადლობა"],
+  "no-georgian": ["ქართული", "არ", "ვიცი"],
+  door: ["კართან", "დატოვეთ"],
+  stop: ["აქ", "გააჩერეთ,", "თუ შეიძლება"],
+  americano: ["ერთი", "ამერიკანო,", "თუ შეიძლება"],
+  "no-receipt": ["ჩეკი", "არ", "მინდა"],
+  "no-bag": ["პარკი", "არ", "მინდა"],
+  "one-kilo": ["ერთი", "კილო,", "თუ შეიძლება"],
+};
 export const lessons: Lesson[] = scenarios.flatMap((s) =>
   [0, 1].map((part) => {
     const batch = phrases
@@ -487,6 +505,15 @@ export const lessons: Lesson[] = scenarios.flatMap((s) =>
         options: [recap.id, batch[0].id, batch[1].id],
         explanation: recap.hint,
       });
+      const assembly = batch.find((p) => phraseChunks[p.id]);
+      if (assembly)
+        steps.push({
+          id: `${s.id}-${part}-assemble`,
+          type: "assemble",
+          phraseId: assembly.id,
+          prompt: assembly.ru,
+          chunks: phraseChunks[assembly.id],
+        });
     }
     return {
       id: `${s.id}-${part + 1}`,

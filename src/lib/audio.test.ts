@@ -51,7 +51,7 @@ test("Georgian recordings cover original phrases, dialogue cues and alphabet wor
   ];
   for (const lesson of lessons)
     for (const step of lesson.steps)
-      if (step.type !== "study" && step.speaker) expected.push(step.speaker);
+      if ((step.type === "quiz" || step.type === "sign") && step.speaker) expected.push(step.speaker);
   for (const text of expected) {
     assert.ok(audioClips[text]?.startsWith("/audio/ka/"), text);
     assert.ok(
