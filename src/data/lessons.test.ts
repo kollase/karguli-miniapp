@@ -8,9 +8,11 @@ import {
   scenarios,
   phraseChunks,
 } from "./lessons.ts";
-test("all five scenarios contain eight reusable phrases and two short lessons", () => {
-  assert.equal(phrases.length, 40);
-  assert.equal(new Set(phrases.map((p) => p.id)).size, 40);
+test("all eight scenarios contain eight reusable phrases and two short lessons", () => {
+  assert.equal(scenarios.length, 8);
+  assert.equal(lessons.length, 16);
+  assert.equal(phrases.length, 64);
+  assert.equal(new Set(phrases.map((p) => p.id)).size, 64);
   for (const s of scenarios) {
     assert.equal(phrases.filter((p) => p.scenario === s.id).length, 8);
     assert.equal(lessons.filter((l) => l.scenarioId === s.id).length, 2);
@@ -78,5 +80,31 @@ test("every conversational lesson includes assembly of an introduced phrase with
       assert.equal(step.chunks.join(" "), phraseById[step.phraseId].ka);
       assert.ok(lesson.steps.slice(0, lesson.steps.indexOf(step)).some((s) => s.type === "study" && s.phraseId === step.phraseId));
     }
+  }
+});
+
+
+test("new everyday lessons introduce all answer options before testing them", () => {
+  for (const scenarioId of ["home", "transport", "social"]) {
+    const scenarioLessons = lessons.filter((l) => l.scenarioId === scenarioId);
+    assert.equal(scenarioLessons.length, 2);
+    for (const lesson of scenarioLessons) {
+      const seen = new Set<string>();
+      for (const step of lesson.steps) {
+        if (step.type === "study") seen.add(step.phraseId);
+        else if (step.type !== "assemble")
+          for (const option of step.options)
+            assert.ok(seen.has(option), `${lesson.id}: unknown option ${option}`);
+      }
+    }
+  }
+});
+
+test("every phrase has readable Russian, Georgian and a Cyrillic pronunciation", () => {
+  for (const phrase of phrases) {
+    assert.match(phrase.ru, /[А-Яа-яЁё]/u, phrase.id);
+    assert.match(phrase.ka, /[ა-ჰ]/u, phrase.id);
+    assert.match(phrase.pronunciation, /[А-Яа-яЁё]/u, phrase.id);
+    assert.doesNotMatch(phrase.pronunciation, /[ა-ჰ]/u, phrase.id);
   }
 });

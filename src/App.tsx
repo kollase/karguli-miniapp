@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import {
   BookOpen,
+  Bus,
   Bookmark,
   Check,
   CheckCheck,
@@ -11,6 +12,7 @@ import {
   Flame,
   Flower2,
   Heart,
+  House,
   Info,
   Leaf,
   MapPin,
@@ -22,6 +24,7 @@ import {
   Sparkles,
   Sun,
   Truck,
+  Users,
   Volume2,
   VolumeX,
   X,
@@ -65,6 +68,9 @@ const scenarioIcons = {
   cafe: Coffee,
   market: ShoppingBag,
   signs: PanelTop,
+  home: House,
+  transport: Bus,
+  social: Users,
 };
 const navItems = [
   { id: "learn", label: "Учиться", icon: BookOpen },
@@ -788,7 +794,7 @@ export default function App() {
                     <h2>На все случаи дня</h2>
                     <p>Выберите, что пригодится именно вам.</p>
                   </div>
-                  <span className="section-meta">5 сценариев · 10 уроков</span>
+                  <span className="section-meta">Сценариев: {scenarios.length} · уроков: {lessons.length}</span>
                 </div>
                 <div className="scenario-grid">
                   {scenarios.map((s, i) => {
@@ -924,6 +930,9 @@ export default function App() {
                   { id: "cafe", label: "Кофейня" },
                   { id: "market", label: "Магазин" },
                   { id: "signs", label: "Вывески" },
+                  { id: "home", label: "Дом и быт" },
+                  { id: "transport", label: "Транспорт" },
+                  { id: "social", label: "Знакомства" },
                 ].map((f) => (
                   <button
                     className={`filter-chip ${filter === f.id ? "selected" : ""}`}
@@ -1573,7 +1582,7 @@ export default function App() {
           <div className="info-block">
             <strong>Учебный прототип</strong>
             <p>
-              40 фраз и 10 микроуроков. Контент пока не прошёл редактуру
+              Фраз: {phrases.length}. Микроуроков: {lessons.length}. Контент пока не прошёл редактуру
               преподавателем грузинского. Кириллическая запись приблизительна;
               приложение не проверяет произношение.
             </p>
