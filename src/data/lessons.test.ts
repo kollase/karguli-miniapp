@@ -1,0 +1,42 @@
+import { test } from "node:test";
+import assert from "node:assert/strict";
+import {
+  alphabet,
+  lessons,
+  phrases,
+  phraseById,
+  scenarios,
+} from "./lessons.ts";
+test("all five scenarios contain eight reusable phrases and two short lessons", () => {
+  assert.equal(phrases.length, 40);
+  assert.equal(new Set(phrases.map((p) => p.id)).size, 40);
+  for (const s of scenarios) {
+    assert.equal(phrases.filter((p) => p.scenario === s.id).length, 8);
+    assert.equal(lessons.filter((l) => l.scenarioId === s.id).length, 2);
+  }
+  for (const l of lessons)
+    assert.ok(l.steps.length >= 6 && l.steps.length <= 8);
+});
+test("every exercise has exactly three valid, unique options and its correct answer", () => {
+  for (const l of lessons)
+    for (const step of l.steps) {
+      assert.ok(phraseById[step.phraseId]);
+      if (step.type !== "study") {
+        assert.equal(step.options.length, 3);
+        assert.equal(new Set(step.options).size, 3);
+        assert.ok(step.options.includes(step.phraseId));
+        for (const id of step.options) assert.ok(phraseById[id]);
+      }
+    }
+});
+test("alphabet contains all 33 distinct Mkhedruli letters with examples", () => {
+  assert.equal(alphabet.length, 33);
+  assert.equal(new Set(alphabet.map((a) => a.letter)).size, 33);
+  for (let i = 0; i < 33; i++)
+    assert.ok(
+      alphabet.some((a) => a.letter === String.fromCharCode(0x10d0 + i)),
+    );
+  for (const s of scenarios)
+    for (const letter of s.letters)
+      assert.ok(alphabet.some((a) => a.letter === letter));
+});
