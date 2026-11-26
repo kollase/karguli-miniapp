@@ -1,4 +1,5 @@
 import { audioClips } from "../data/audio-clips.ts";
+import { publicAsset } from "./assets.ts";
 
 export type SoundEffect = "tap" | "correct" | "incorrect" | "complete";
 export interface SpeechLine {
@@ -163,7 +164,7 @@ export class AppAudio {
         const clip = audioClips[lines[i].text];
         if (clip) {
           try {
-            await this.playFile(clip, rate, volume, onStart);
+            await this.playFile(publicAsset(clip), rate, volume, onStart);
           } catch (error) {
             if (run !== this.run) return;
             if (

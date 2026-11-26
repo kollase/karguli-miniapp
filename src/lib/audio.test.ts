@@ -3,6 +3,7 @@ import assert from "node:assert/strict";
 import { readFileSync, statSync } from "node:fs";
 import { AppAudio, speechKey } from "./audio.ts";
 import { audioClips } from "../data/audio-clips.ts";
+import { publicAsset } from "./assets.ts";
 import { phrases, lessons, alphabet } from "../data/lessons.ts";
 
 class FakeAudio {
@@ -58,6 +59,13 @@ test("Georgian recordings cover original phrases, dialogue cues and alphabet wor
       statSync(new URL(`../../public${audioClips[text]}`, import.meta.url))
         .size > 1000,
     );
+  }
+});
+test("recordings resolve inside the deployment subdirectory and also work at the root", () => {
+  for (const clip of Object.values(audioClips)) {
+    assert.equal(publicAsset(clip), clip);
+    assert.equal(publicAsset(clip, "/karguli-miniapp/"), `/karguli-miniapp${clip}`);
+    assert.equal(publicAsset(clip, "/karguli-miniapp"), `/karguli-miniapp${clip}`);
   }
 });
 test("two dialogue lines reuse one media element and finish in order", async () => {

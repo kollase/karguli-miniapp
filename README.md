@@ -49,6 +49,21 @@ python scripts/generate-audio.py /path/to/ka_GE-natia-medium.onnx
 
 `src/data/lessons.ts` содержит типы Phrase, Lesson, Step, AlphabetLetter и весь учебный контент. Фразы переиспользуются по постоянным ID. Весь контент имеет `editorialStatus: 'draft'`: он ещё не проверен преподавателем/редактором грузинского. Кириллическая запись приблизительна; приложение не проверяет произношение пользователя. Синтезированная грузинская озвучка пока не прошла проверку преподавателем. Перед учебным релизом нужна языковая редактура всех фраз, транскрипций, примеров и ситуаций.
 
+## Публикация на GitHub Pages
+
+Workflow `.github/workflows/deploy-pages.yml` проверяет тесты, собирает приложение и публикует `dist` при push в `main`. В Settings → Pages источник публикации должен быть **GitHub Actions**.
+
+Адрес демо: https://kollase.github.io/karguli-miniapp/
+
+В workflow задан `VITE_BASE_PATH=/${{ github.event.repository.name }}/`. Пути к аудио используют базовый адрес Vite, поэтому работают и в подкаталоге Pages, и на хостинге в корне домена. Для локальной проверки сборки Pages:
+
+```bash
+VITE_BASE_PATH=/karguli-miniapp/ npm run build
+VITE_BASE_PATH=/karguli-miniapp/ npm run preview
+```
+
+Открыть `http://127.0.0.1:4173/karguli-miniapp/`. Обычная `npm run build` сохраняет базовый путь `/`.
+
 ## Подключение к Telegram
 
 1. Разместить `dist/` на публично доступном HTTPS-хостинге. Приватный предпросмотр Sites с авторизацией не является готовым адресом для Telegram WebView.
