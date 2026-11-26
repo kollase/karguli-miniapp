@@ -44,36 +44,6 @@ function setup() {
   return new AppAudio();
 }
 
-test("Russian recordings cover all study cards, questions, dialogue cues and settings preview", () => {
-  const expected = [
-    "Здравствуйте! Давайте познакомимся.",
-    ...phrases.map((p) => p.ru),
-  ];
-  for (const lesson of lessons)
-    for (const step of lesson.steps)
-      if (step.type !== "study") {
-        expected.push(step.prompt);
-        if (step.speakerTranslation) expected.push(step.speakerTranslation);
-      }
-  for (const text of expected) {
-    assert.ok(audioClips[text], text);
-    assert.ok(
-      statSync(new URL(`../../public${audioClips[text]}`, import.meta.url))
-        .size > 1000,
-    );
-  }
-  const manifest = JSON.parse(
-    readFileSync(
-      new URL("../../public/audio/ru/manifest.json", import.meta.url),
-      "utf8",
-    ),
-  );
-  assert.equal(
-    manifest.length,
-    Object.keys(audioClips).filter((text) => audioClips[text].includes("/ru/"))
-      .length,
-  );
-});
 test("Georgian recordings cover original phrases, dialogue cues and alphabet words", () => {
   const expected = [
     ...phrases.map((p) => p.ka),
@@ -95,13 +65,14 @@ test("two dialogue lines reuse one media element and finish in order", async () 
     states: string[] = [];
   player.subscribe((s) => states.push(`${s.status}:${s.index}`));
   await player.speak(
-    [{ text: "Здравствуйте" }, { text: "Большое спасибо" }],
+    [{ text: "გამარჯობა" }, { text: "დიდი მადლობა" }],
     0.85,
     0.4,
   );
   assert.equal(FakeAudio.instances.length, 1);
   assert.equal(FakeAudio.instances[0].playbackRate, 0.85);
   assert.equal(FakeAudio.instances[0].volume, 0.4);
+  assert.ok(states.indexOf("speaking:0") >= 0);
   assert.ok(states.indexOf("speaking:0") < states.indexOf("speaking:1"));
   assert.equal(states.at(-1), "idle:-1");
   player.stop();
@@ -112,7 +83,7 @@ test("stop cancels a pending dialogue without playing the next line", async () =
   let state = "";
   player.subscribe((s) => (state = s.status));
   const playing = player.speak(
-    [{ text: "Здравствуйте" }, { text: "Большое спасибо" }],
+    [{ text: "გამარჯობა" }, { text: "დიდი მადლობა" }],
     1,
     0.4,
   );
@@ -129,18 +100,18 @@ test("unavailable audio and speech API report a recoverable error", async () => 
   FakeAudio.fail = true;
   let state = { status: "", error: "" };
   player.subscribe((s) => (state = s));
-  await player.speak([{ text: "Здравствуйте" }], 1, 0.4);
+  await player.speak([{ text: "გამარჯობა" }], 1, 0.4);
   assert.equal(state.status, "error");
   assert.ok(state.error.length > 0);
   FakeAudio.fail = false;
-  await player.speak([{ text: "Здравствуйте" }], 1, 0.4);
+  await player.speak([{ text: "გამარჯობა" }], 1, 0.4);
   assert.equal(state.status, "idle");
 });
 test("same speech button stops playback; unsupported sound effects are harmless", async () => {
   const player = setup();
   FakeAudio.autoEnd = false;
-  const lines = [{ text: "Здравствуйте" }];
-  assert.equal(speechKey(lines), "ru-RU:Здравствуйте");
+  const lines = [{ text: "გამარჯობა" }];
+  assert.equal(speechKey(lines), "1|გამარჯობა");
   const pending = player.speak(lines, 1, 0.5);
   await Promise.resolve();
   await player.speak(lines, 1, 0.5);
@@ -164,7 +135,7 @@ test("Georgian dialogue uses Georgian assets and its own playback identity", asy
   assert.equal(FakeAudio.instances[0].src, audioClips["დიდი მადლობა"]);
   assert.notEqual(
     speechKey([{ text: "x", lang: "ka-GE" }]),
-    speechKey([{ text: "x", lang: "ru-RU" }]),
+    speechKey([{ text: "x", lang: "ka-GE" }], 0.75),
   );
 });
 test("Georgian speech never falls back to a Russian system voice", async () => {
@@ -186,4 +157,23 @@ test("Georgian speech never falls back to a Russian system voice", async () => {
   assert.equal(spoke, false);
   assert.equal(state.status, "error");
   assert.match(state.error, /грузинский/);
+});
+test("turtle restarts the current phrase slowly and preserves its pitch", async () => {
+  const player = setup();
+  FakeAudio.autoEnd = false;
+  const lines = [{ text: "გამარჯობა", lang: "ka-GE" as const }];
+  const normal = player.speak(lines, 1, 0.4);
+  await Promise.resolve();
+  const slow = player.speak(lines, 0.75, 0.4, true);
+  await normal;
+  await Promise.resolve();
+  assert.equal(FakeAudio.instances[0].paused, true);
+  assert.equal(FakeAudio.instances[1].playbackRate, 0.75);
+  assert.equal(FakeAudio.instances[1].src, audioClips["გამარჯობა"]);
+  const repeated = player.speak(lines, 0.75, 0.4, true);
+  await slow;
+  await Promise.resolve();
+  assert.equal(FakeAudio.instances[2].playbackRate, 0.75);
+  player.stop();
+  await repeated;
 });

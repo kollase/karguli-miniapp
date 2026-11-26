@@ -1,4 +1,4 @@
-"""Generate speech assets: python scripts/generate-audio.py /path/to/model.onnx [ru|ka]"""
+"""Generate speech assets: python scripts/generate-audio.py /path/to/model.onnx [ka]"""
 import json
 from pathlib import Path
 import subprocess
@@ -10,9 +10,9 @@ onnxruntime.disable_telemetry_events()
 from piper import PiperVoice, SynthesisConfig
 
 root=Path(__file__).resolve().parents[1]
-language=sys.argv[2] if len(sys.argv)>2 else 'ru'
-if language not in ('ru','ka'):
-    raise SystemExit('Language must be ru or ka')
+language=sys.argv[2] if len(sys.argv)>2 else 'ka'
+if language != 'ka':
+    raise SystemExit('Only Georgian audio is supported')
 target=root/'public/audio'/language
 manifest=json.loads((target/'manifest.json').read_text())
 voice=PiperVoice.load(sys.argv[1])

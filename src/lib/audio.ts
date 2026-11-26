@@ -4,7 +4,7 @@ export type SoundEffect = "tap" | "correct" | "incorrect" | "complete";
 export interface SpeechLine {
   text: string;
   role?: string;
-  lang?: "ru-RU" | "ka-GE";
+  lang?: "ka-GE";
 }
 export interface PlaybackState {
   key: string;
@@ -13,8 +13,8 @@ export interface PlaybackState {
   error: string;
 }
 const idle: PlaybackState = { key: "", status: "idle", index: -1, error: "" };
-export const speechKey = (lines: SpeechLine[]) =>
-  lines.map((l) => `${l.lang ?? "ru-RU"}:${l.text}`).join("\n");
+export const speechKey = (lines: SpeechLine[], rate = 1) =>
+  `${rate}|${lines.map((l) => l.text).join("\n")}`;
 
 // Original, short UI sounds, synthesized locally. No external audio requests.
 const melodies: Record<SoundEffect, [number, number, number][]> = {
@@ -137,9 +137,11 @@ export class AppAudio {
     lines: SpeechLine[],
     rate: number,
     volume: number,
+    restart = false,
   ): Promise<void> {
-    const key = speechKey(lines);
+    const key = speechKey(lines, rate);
     if (
+      !restart &&
       this.state.key === key &&
       (this.state.status === "speaking" || this.state.status === "loading")
     ) {
@@ -173,7 +175,7 @@ export class AppAudio {
               );
             await this.synthesize(
               lines[i].text,
-              lines[i].lang ?? "ru-RU",
+              "ka-GE",
               rate,
               volume,
               i,
@@ -183,7 +185,7 @@ export class AppAudio {
         } else
           await this.synthesize(
             lines[i].text,
-            lines[i].lang ?? "ru-RU",
+            "ka-GE",
             rate,
             volume,
             i,
@@ -216,6 +218,7 @@ export class AppAudio {
       audio.src = url;
       audio.preload = "auto";
       audio.playbackRate = rate;
+      audio.preservesPitch = true;
       audio.volume = volume;
       let finished = false;
       const done = (error?: unknown) => {
@@ -247,7 +250,7 @@ export class AppAudio {
   }
   private synthesize(
     text: string,
-    lang: "ru-RU" | "ka-GE",
+    lang: "ka-GE",
     rate: number,
     volume: number,
     roleIndex: number,
@@ -273,7 +276,7 @@ export class AppAudio {
       if (!voices.length) {
         reject(
           new Error(
-            `Не удалось загрузить аудио, а ${lang === "ka-GE" ? "грузинский" : "русский"} голос на устройстве не найден. Проверьте соединение и попробуйте снова.`,
+            `Не удалось загрузить аудио, а грузинский голос на устройстве не найден. Проверьте соединение и попробуйте снова.`,
           ),
         );
         return;

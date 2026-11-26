@@ -2424,6 +2424,45 @@ h1 {
 .speech-control {
   margin: 12px 0 20px;
 }
+.speech-actions {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.speech-actions .speech-button {
+  min-width: 0;
+}
+.slow-speech-button {
+  min-height: 44px;
+  min-width: 63px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  padding: 9px 12px;
+  background: var(--surface);
+  color: var(--sage);
+  flex-shrink: 0;
+}
+.slow-speech-button span {
+  font-size: 10px;
+}
+.slow-speech-button:hover,
+.slow-speech-button.playing {
+  background: var(--green);
+  border-color: var(--sage);
+}
+.stop-slow {
+  width: 36px;
+  color: var(--sage);
+}
+.audio-test-buttons .slow-speech-button {
+  width: auto;
+  min-width: 70px;
+  flex-shrink: 0;
+}
 .speech-pair {
   display: flex;
   align-items: flex-start;

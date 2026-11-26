@@ -984,7 +984,6 @@ export default function App() {
                           lines={[{ text: p.ka, lang: "ka-GE" }]}
                           label="Послушать"
                           state={playback}
-                          rate={progress.speechRate}
                           volume={progress.audioVolume}
                         />
                       </div>
@@ -1225,14 +1224,6 @@ export default function App() {
                           ]}
                           label="По-грузински"
                           state={playback}
-                          rate={progress.speechRate}
-                          volume={progress.audioVolume}
-                        />
-                        <SpeechButton
-                          lines={[{ text: phraseById[step.phraseId].ru }]}
-                          label="Русский перевод"
-                          state={playback}
-                          rate={progress.speechRate}
                           volume={progress.audioVolume}
                         />
                       </div>
@@ -1281,34 +1272,11 @@ export default function App() {
                             ]}
                             label="Реплика по-грузински"
                             state={playback}
-                            rate={progress.speechRate}
                             volume={progress.audioVolume}
                           />
-                          {step.speakerTranslation && (
-                            <SpeechButton
-                              lines={[
-                                {
-                                  text: step.speakerTranslation,
-                                  role: "Собеседник",
-                                },
-                              ]}
-                              label="Русский перевод реплики"
-                              state={playback}
-                              rate={progress.speechRate}
-                              volume={progress.audioVolume}
-                            />
-                          )}
                         </div>
                       )}
-                      {step.type === "quiz" && !step.speaker && (
-                        <SpeechButton
-                          lines={[{ text: step.prompt }]}
-                          label="Послушать ситуацию"
-                          state={playback}
-                          rate={progress.speechRate}
-                          volume={progress.audioVolume}
-                        />
-                      )}
+
                       <div className="answer-options">
                         {[...step.options]
                           .sort((a, b) => {
@@ -1377,35 +1345,8 @@ export default function App() {
                             }
                             showTranscript
                             state={playback}
-                            rate={progress.speechRate}
                             volume={progress.audioVolume}
                           />
-                          {step.type === "quiz" && (
-                            <SpeechButton
-                              lines={[
-                                ...(step.speakerTranslation
-                                  ? [
-                                      {
-                                        text: step.speakerTranslation,
-                                        role: "Собеседник",
-                                      },
-                                    ]
-                                  : [{ text: step.prompt, role: "Ситуация" }]),
-                                {
-                                  text: phraseById[step.phraseId].ru,
-                                  role: "Вы",
-                                },
-                              ]}
-                              label={
-                                step.speakerTranslation
-                                  ? "Диалог в переводе"
-                                  : "Ответ в переводе"
-                              }
-                              state={playback}
-                              rate={progress.speechRate}
-                              volume={progress.audioVolume}
-                            />
-                          )}
                         </div>
                       )}
                     </>
@@ -1538,7 +1479,6 @@ export default function App() {
             lines={[{ text: letter.word, lang: "ka-GE" }]}
             label="Послушать слово"
             state={playback}
-            rate={progress.speechRate}
             volume={progress.audioVolume}
           />
           <p className="modal-description">
@@ -1627,30 +1567,6 @@ export default function App() {
                 }}
               />
             </label>
-            <div className="audio-speed">
-              <span>Скорость речи</span>
-              <div>
-                {[
-                  { value: 0.85, label: "Помедленнее" },
-                  { value: 1, label: "Обычно" },
-                  { value: 1.15, label: "Побыстрее" },
-                ].map((r) => (
-                  <button
-                    key={r.value}
-                    aria-pressed={progress.speechRate === r.value}
-                    className={
-                      progress.speechRate === r.value ? "selected" : ""
-                    }
-                    onClick={() => {
-                      appAudio.stop();
-                      setProgress((p) => ({ ...p, speechRate: r.value }));
-                    }}
-                  >
-                    {r.label}
-                  </button>
-                ))}
-              </div>
-            </div>
             <div className="audio-test-buttons">
               <button
                 className="secondary-button"
@@ -1666,14 +1582,6 @@ export default function App() {
                 lines={[{ text: "გამარჯობა", lang: "ka-GE" }]}
                 label="Грузинский голос"
                 state={playback}
-                rate={progress.speechRate}
-                volume={progress.audioVolume}
-              />
-              <SpeechButton
-                lines={[{ text: "Здравствуйте! Давайте познакомимся." }]}
-                label="Русский голос"
-                state={playback}
-                rate={progress.speechRate}
                 volume={progress.audioVolume}
               />
             </div>
@@ -1681,9 +1589,9 @@ export default function App() {
           <div className="audio-note">
             <Info size={19} />
             <p>
-              Грузинские фразы читает синтезированный грузинский голос Natia,
-              перевод — русский голос. Перед учебным релизом произношение должен
-              проверить преподаватель.
+              Слушайте грузинский голос Natia в обычном темпе. Черепашка рядом
+              повторит ту же фразу медленнее, на скорости 0,75×. Произношение
+              синтезированных записей ещё должен проверить преподаватель.
             </p>
           </div>
         </Modal>

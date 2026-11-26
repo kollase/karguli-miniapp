@@ -22,7 +22,6 @@ export interface Progress {
   theme: "auto" | "light" | "dark";
   soundEffects: boolean;
   audioVolume: number;
-  speechRate: number;
   active?: ActiveSession;
 }
 export const STORAGE_KEY = "karguli.progress.v1";
@@ -37,7 +36,6 @@ export const freshProgress = (): Progress => ({
   theme: "auto",
   soundEffects: true,
   audioVolume: 0.45,
-  speechRate: 1,
 });
 export function localDay(date = new Date()): string {
   return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
@@ -92,9 +90,6 @@ export function parseProgress(raw: string | null): Progress {
         typeof v.audioVolume === "number" && Number.isFinite(v.audioVolume)
           ? Math.min(1, Math.max(0.1, v.audioVolume))
           : fresh.audioVolume,
-      speechRate: [0.85, 1, 1.15].includes(v.speechRate)
-        ? v.speechRate
-        : fresh.speechRate,
     };
     const a = v.active;
     if (

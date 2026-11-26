@@ -35,23 +35,19 @@ test("audio settings migrate without losing existing progress and validate corru
       ...migrated,
       soundEffects: false,
       audioVolume: 0.7,
-      speechRate: 0.85,
     }),
   );
   assert.equal(saved.soundEffects, false);
   assert.equal(saved.audioVolume, 0.7);
-  assert.equal(saved.speechRate, 0.85);
   const corrupt = parseProgress(
     JSON.stringify({
       ...saved,
       soundEffects: "bad",
       audioVolume: 5,
-      speechRate: 9,
     }),
   );
   assert.equal(corrupt.soundEffects, true);
   assert.equal(corrupt.audioVolume, 1);
-  assert.equal(corrupt.speechRate, 1);
 });
 test("mastery requires successful retrieval on different days", () => {
   let p = answer(freshProgress(), "hello", true, "2026-11-26");
