@@ -8,17 +8,17 @@ import {
   scenarios,
   phraseChunks,
 } from "./lessons.ts";
-test("all eight scenarios contain eight reusable phrases and two short lessons", () => {
-  assert.equal(scenarios.length, 8);
-  assert.equal(lessons.length, 16);
-  assert.equal(phrases.length, 64);
-  assert.equal(new Set(phrases.map((p) => p.id)).size, 64);
+test("scenario content is complete and divided into four-card lessons", () => {
+  assert.equal(scenarios.length, 9);
+  assert.equal(lessons.length, 20);
+  assert.equal(phrases.length, 80);
+  assert.equal(new Set(phrases.map((p) => p.id)).size, 80);
   for (const s of scenarios) {
-    assert.equal(phrases.filter((p) => p.scenario === s.id).length, 8);
-    assert.equal(lessons.filter((l) => l.scenarioId === s.id).length, 2);
+    assert.equal(phrases.filter((p) => p.scenario === s.id).length, s.id === "numbers" ? 16 : 8);
+    assert.equal(lessons.filter((l) => l.scenarioId === s.id).length, s.id === "numbers" ? 4 : 2);
   }
   for (const l of lessons)
-    assert.ok(l.steps.length >= 6 && l.steps.length <= 8);
+    assert.ok(l.steps.length >= 6 && l.steps.length <= 9);
 });
 test("every exercise has exactly three valid, unique options and its correct answer", () => {
   for (const l of lessons)
@@ -68,14 +68,17 @@ test("alphabet contains all 33 distinct Mkhedruli letters with examples", () => 
       assert.ok(alphabet.some((a) => a.letter === letter));
 });
 
-test("every conversational lesson includes assembly of an introduced phrase with intact chunks", () => {
+test("phrase assembly uses introduced phrases and preserves every authored chunk", () => {
   for (const [id, chunks] of Object.entries(phraseChunks)) {
-    assert.ok(chunks.length >= 2 && chunks.length <= 5);
+    assert.ok(chunks.length >= 2 && chunks.length <= 7);
     assert.equal(chunks.join(" "), phraseById[id].ka);
   }
   for (const lesson of lessons) {
     const assembly = lesson.steps.filter((s) => s.type === "assemble");
-    assert.equal(assembly.length, lesson.scenarioId === "signs" ? 0 : 1);
+    const expected = lesson.scenarioId === "numbers"
+      ? [0, 0, 1, 2][lesson.part - 1]
+      : lesson.scenarioId === "signs" ? 0 : 1;
+    assert.equal(assembly.length, expected);
     for (const step of assembly) {
       assert.equal(step.chunks.join(" "), phraseById[step.phraseId].ka);
       assert.ok(lesson.steps.slice(0, lesson.steps.indexOf(step)).some((s) => s.type === "study" && s.phraseId === step.phraseId));
@@ -85,9 +88,9 @@ test("every conversational lesson includes assembly of an introduced phrase with
 
 
 test("new everyday lessons introduce all answer options before testing them", () => {
-  for (const scenarioId of ["home", "transport", "social"]) {
+  for (const scenarioId of ["home", "transport", "social", "numbers"]) {
     const scenarioLessons = lessons.filter((l) => l.scenarioId === scenarioId);
-    assert.equal(scenarioLessons.length, 2);
+    assert.equal(scenarioLessons.length, scenarioId === "numbers" ? 4 : 2);
     for (const lesson of scenarioLessons) {
       const seen = new Set<string>();
       for (const step of lesson.steps) {
@@ -107,4 +110,18 @@ test("every phrase has readable Russian, Georgian and a Cyrillic pronunciation",
     assert.match(phrase.pronunciation, /[А-Яа-яЁё]/u, phrase.id);
     assert.doesNotMatch(phrase.pronunciation, /[ა-ჰ]/u, phrase.id);
   }
+});
+
+
+test("numbers are introduced before ordering quantities and both requested orders are practiced", () => {
+  const numberLessons = lessons.filter((l) => l.scenarioId === "numbers");
+  const studied = numberLessons.flatMap((l) => l.steps.filter((s) => s.type === "study").map((s) => s.phraseId));
+  const numeric = studied.slice(0, 10).map((id) => Number.parseInt(phraseById[id].ru));
+  assert.deepEqual(numeric, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
+  const assemblies = numberLessons.flatMap((l) => l.steps.filter((s) => s.type === "assemble"));
+  for (const id of ["order-two-each", "order-coffee-donuts"]) {
+    assert.ok(assemblies.some((s) => s.phraseId === id), id);
+    assert.ok(studied.indexOf(id) > studied.indexOf("number-two"));
+  }
+  assert.equal(phraseChunks["order-two-each"].filter((chunk) => chunk === "ორი").length, 2);
 });

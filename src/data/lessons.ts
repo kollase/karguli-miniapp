@@ -1,4 +1,4 @@
-export type ScenarioId = "basics" | "delivery" | "cafe" | "market" | "signs" | "home" | "transport" | "social";
+export type ScenarioId = "basics" | "delivery" | "cafe" | "market" | "signs" | "home" | "transport" | "social" | "numbers";
 export interface Phrase {
   id: string;
   scenario: ScenarioId;
@@ -96,6 +96,14 @@ export const scenarios: Scenario[] = [
       "ყ",
       "ჰ"
     ]
+  },
+  {
+    id: "numbers",
+    title: "Один кофе, два пончика",
+    subtitle: "Числа 1–10, размер и заказ из двух позиций",
+    label: "Числа и заказ",
+    color: "green",
+    letters: ["ჭ", "ყ", "ც", "ჩ"],
   },
 ];
 type Row = [string, string, string, string, string, boolean?];
@@ -602,6 +610,126 @@ const content: Record<ScenarioId, Row[]> = {
       true
     ]
   ],
+  numbers: [
+    [
+      "number-one",
+      "1 · один",
+      "ერთი",
+      "эрти",
+      "ერთი — один. Вы уже встречали это слово в заказе американо."
+    ],
+    [
+      "number-two",
+      "2 · два",
+      "ორი",
+      "ори",
+      "ორი — два. Количество ставится перед названием: ორი პონჩიკი — два пончика."
+    ],
+    [
+      "number-three",
+      "3 · три",
+      "სამი",
+      "сами",
+      "სამი — три. В грузинском после числительного название предмета обычно стоит в единственном числе."
+    ],
+    [
+      "number-four",
+      "4 · четыре",
+      "ოთხი",
+      "отхи",
+      "ოთხი — четыре. В сочетании თხ не добавляйте лишнюю гласную между согласными."
+    ],
+    [
+      "number-five",
+      "5 · пять",
+      "ხუთი",
+      "хути",
+      "ხუთი — пять. Пригодится, когда покупаете выпечку на компанию."
+    ],
+    [
+      "number-six",
+      "6 · шесть",
+      "ექვსი",
+      "эквси",
+      "ექვსი — шесть. Произнесите сочетание квс без добавочных гласных."
+    ],
+    [
+      "number-seven",
+      "7 · семь",
+      "შვიდი",
+      "швиди",
+      "შვიდი — семь. Начало шв произносится слитно."
+    ],
+    [
+      "number-eight",
+      "8 · восемь",
+      "რვა",
+      "рва",
+      "რვა — восемь. Короткое слово: рва, без дополнительной гласной перед р."
+    ],
+    [
+      "number-nine",
+      "9 · девять",
+      "ცხრა",
+      "цхра",
+      "ცხრა — девять. Сочетание цхр непривычно: послушайте замедленную запись."
+    ],
+    [
+      "number-ten",
+      "10 · десять",
+      "ათი",
+      "ати",
+      "ათი — десять. Здесь თ — т с придыханием; кириллическая запись приблизительна."
+    ],
+    [
+      "order-small-coffee",
+      "Один маленький кофе, пожалуйста",
+      "ერთი პატარა ყავა, თუ შეიძლება",
+      "эрти патара кава, ту шеидзлеба",
+      "ერთი — один, პატარა — маленький, ყავა — кофе. Назовите нужный вид кофе отдельно, если бариста уточнит.",
+      true
+    ],
+    [
+      "order-two-donuts",
+      "Два пончика, пожалуйста",
+      "ორი პონჩიკი, თუ შეიძლება",
+      "ори пончики, ту шеидзлеба",
+      "ორი — два, პონჩიკი — пончик. После ორი слово остаётся в единственном числе: плашка პონჩიკი, без -ები.",
+      true
+    ],
+    [
+      "order-two-here",
+      "Дайте два вот этих, пожалуйста",
+      "აქედან ორი მომეცით, თუ შეიძლება",
+      "акедан ори момецит, ту шеидзлеба",
+      "Буквально: «Дайте два отсюда». Покажите на нужный вид товара; აქედან — отсюда, მომეცით — дайте.",
+      true
+    ],
+    [
+      "order-two-there",
+      "Дайте два вот тех, пожалуйста",
+      "იქიდან ორი მომეცით, თუ შეიძლება",
+      "икидан ори момецит, ту шеидзлеба",
+      "იქიდან — оттуда. Покажите вторую полку или другой вид выпечки.",
+      true
+    ],
+    [
+      "order-two-each",
+      "Дайте два вот этих и два вот тех, пожалуйста",
+      "აქედან ორი და იქიდან ორი მომეცით, თუ შეიძლება",
+      "акедан ори да икидан ори момецит, ту шеидзлеба",
+      "და — и. Сначала покажите один вид товара, затем другой. Два кусочка ორი нужны оба: по две штуки каждого вида.",
+      true
+    ],
+    [
+      "order-coffee-donuts",
+      "Один маленький кофе и два пончика, пожалуйста",
+      "ერთი პატარა ყავა და ორი პონჩიკი, თუ შეიძლება",
+      "эрти патара кава да ори пончики, ту шеидзлеба",
+      "Соедините два заказа словом და — «и». Вежливое თუ შეიძლება достаточно добавить один раз в конце.",
+      true
+    ]
+  ],
 };
 export const phrases: Phrase[] = scenarios.flatMap((s) =>
   content[s.id].map(([id, ru, ka, pronunciation, hint, favoriteCandidate]) => ({
@@ -645,7 +773,7 @@ export interface Lesson {
   steps: Step[];
   letters: string[];
 }
-const questions: Record<ScenarioId, [string, string, string, string]> = {
+const questions: Record<ScenarioId, string[]> = {
   basics: [
     "Вы вошли в небольшую кофейню. Как поздороваетесь?",
     "Вам помогли найти нужный дом. Как поблагодарите?",
@@ -694,6 +822,16 @@ const questions: Record<ScenarioId, [string, string, string, string]> = {
     "Вы встретили знакомого соседа. Как спросите о его делах?",
     "Вы заканчиваете разговор. Как попрощаетесь?"
   ],
+  numbers: [
+    "Как по-грузински сказать «один»?",
+    "Вы хотите две штуки. Какое число назовёте?",
+    "Нужно пять штук. Выберите число «пять».",
+    "Как сказать «восемь»?",
+    "Какое слово означает «девять»?",
+    "Вы хотите два пончика. Как закажете?",
+    "Вы показываете на ближний лоток. Попросите «два отсюда».",
+    "Закажите один маленький кофе и два пончика одной фразой."
+  ],
 };
 const dialogue: Record<string, [string, string]> = {
   hello: ["გამარჯობა!", "Здравствуйте!"],
@@ -707,6 +845,8 @@ const dialogue: Record<string, [string, string]> = {
   "social-my-name": ["რა გქვიათ?", "Как вас зовут?"],
   "social-how-are-you": ["გამარჯობა!", "Здравствуйте!"],
   "social-goodbye": ["ნახვამდის!", "До свидания!"],
+  "order-two-donuts": ["რას ინებებთ?", "Что будете заказывать?"],
+  "order-coffee-donuts": ["რას ინებებთ?", "Что будете заказывать?"],
 };
 // Authored boundaries keep useful expressions together, including punctuation.
 export const phraseChunks: Record<string, string[]> = {
@@ -724,15 +864,19 @@ export const phraseChunks: Record<string, string[]> = {
   "transport-stop-request": ["გაჩერებაზე", "გამიჩერეთ,", "თუ შეიძლება"],
   "social-my-name": ["მე", "ნიკა", "მქვია"],
   "social-learning": ["ქართულს", "ვსწავლობ"],
+  "order-small-coffee": ["ერთი", "პატარა", "ყავა,", "თუ შეიძლება"],
+  "order-two-each": ["აქედან", "ორი", "და", "იქიდან", "ორი", "მომეცით, თუ შეიძლება"],
+  "order-coffee-donuts": ["ერთი", "პატარა", "ყავა", "და", "ორი", "პონჩიკი,", "თუ შეიძლება"],
 };
-const expandedScenarios = new Set<ScenarioId>(["home", "transport", "social"]);
-const lessonTitles: Partial<Record<ScenarioId, [string, string]>> = {
+const expandedScenarios = new Set<ScenarioId>(["home", "transport", "social", "numbers"]);
+const lessonTitles: Partial<Record<ScenarioId, string[]>> = {
   home: ["Что не работает", "Договориться о визите"],
   transport: ["Найти остановку и билет", "В салоне"],
   social: ["Познакомиться", "Поддержать разговор"],
+  numbers: ["Считаем от 1 до 4", "Считаем от 5 до 8", "9, 10 и первый заказ", "Две позиции в одном заказе"],
 };
 export const lessons: Lesson[] = scenarios.flatMap((s) =>
-  [0, 1].map((part) => {
+  Array.from({ length: content[s.id].length / 4 }, (_, part) => {
     const batch = phrases
       .filter((p) => p.scenario === s.id)
       .slice(part * 4, part * 4 + 4);
@@ -779,10 +923,12 @@ export const lessons: Lesson[] = scenarios.flatMap((s) =>
         options: [recap.id, batch[0].id, batch[1].id],
         explanation: recap.hint,
       });
-      const assembly = batch.find((p) => phraseChunks[p.id]);
-      if (assembly)
+      const assemblyPhrases = batch.filter((p) => phraseChunks[p.id]);
+      // Orders practice both pointing at a display and naming two items.
+      // Older lessons keep their existing assembly step and ID for saved sessions.
+      for (const assembly of s.id === "numbers" ? assemblyPhrases : assemblyPhrases.slice(0, 1))
         steps.push({
-          id: `${s.id}-${part}-assemble`,
+          id: s.id === "numbers" ? `${s.id}-${part}-assemble-${assembly.id}` : `${s.id}-${part}-assemble`,
           type: "assemble",
           phraseId: assembly.id,
           prompt: assembly.ru,

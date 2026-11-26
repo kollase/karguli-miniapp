@@ -16,6 +16,7 @@ import {
   Info,
   Leaf,
   MapPin,
+  Hash,
   Moon,
   PanelTop,
   RotateCcw,
@@ -71,6 +72,7 @@ const scenarioIcons = {
   home: House,
   transport: Bus,
   social: Users,
+  numbers: Hash,
 };
 const navItems = [
   { id: "learn", label: "Учиться", icon: BookOpen },
@@ -763,7 +765,7 @@ export default function App() {
                       {known.length}
                       <span> / {phrases.length}</span>
                     </strong>
-                    <p>фраз встретили</p>
+                    <p>слов и фраз встретили</p>
                   </div>
                 </div>
                 <div>
@@ -772,7 +774,7 @@ export default function App() {
                   </span>
                   <div>
                     <strong>{mastered.length}</strong>
-                    <p>фраз закрепили</p>
+                    <p>слов и фраз закрепили</p>
                   </div>
                 </div>
                 <div>
@@ -799,11 +801,8 @@ export default function App() {
                 <div className="scenario-grid">
                   {scenarios.map((s, i) => {
                     const Icon = scenarioIcons[s.id];
-                    const completed = lessons.filter(
-                      (l) =>
-                        l.scenarioId === s.id &&
-                        progress.completed.includes(l.id),
-                    ).length;
+                    const scenarioLessons = lessons.filter((l) => l.scenarioId === s.id);
+                    const completed = scenarioLessons.filter((l) => progress.completed.includes(l.id)).length;
                     return (
                       <button
                         className={`scenario-card ${s.color}`}
@@ -823,16 +822,16 @@ export default function App() {
                         <p>{s.subtitle}</p>
                         <div className="card-bottom">
                           <span>
-                            {completed === 2
+                            {completed === scenarioLessons.length
                               ? "Пройдено · можно повторить"
-                              : `${completed} из 2 уроков`}
+                              : `${completed} из ${scenarioLessons.length} уроков`}
                           </span>
                           <span className="card-open">
                             <ChevronRight size={19} />
                           </span>
                         </div>
                         <div className="card-progress">
-                          <span style={{ width: `${completed * 50}%` }} />
+                          <span style={{ width: `${completed / scenarioLessons.length * 100}%` }} />
                         </div>
                       </button>
                     );
@@ -933,6 +932,7 @@ export default function App() {
                   { id: "home", label: "Дом и быт" },
                   { id: "transport", label: "Транспорт" },
                   { id: "social", label: "Знакомства" },
+                  { id: "numbers", label: "Числа и заказ" },
                 ].map((f) => (
                   <button
                     className={`filter-chip ${filter === f.id ? "selected" : ""}`}
@@ -1478,7 +1478,7 @@ export default function App() {
           <div className="eyebrow">ВАШ СЛЕДУЮЩИЙ МАЛЕНЬКИЙ ШАГ</div>
           <h2>{scenarios.find((s) => s.id === scenario)?.title}</h2>
           <p className="modal-description">
-            Два коротких урока. В каждом — четыре фразы и практика.
+            Короткие уроки. В каждом — четыре слова или фразы и практика.
           </p>
           <div className="lesson-picker">
             {lessons
@@ -1494,7 +1494,7 @@ export default function App() {
                   </span>
                   <span>
                     <strong>{l.title}</strong>
-                    <small>4 фразы · 2–3 минуты</small>
+                    <small>{l.scenarioId === "numbers" ? "4 слова или фразы" : "4 фразы"} · 2–3 минуты</small>
                   </span>
                   <ChevronRight size={20} />
                 </button>
@@ -1582,7 +1582,7 @@ export default function App() {
           <div className="info-block">
             <strong>Учебный прототип</strong>
             <p>
-              Фраз: {phrases.length}. Микроуроков: {lessons.length}. Контент пока не прошёл редактуру
+              Слов и фраз: {phrases.length}. Микроуроков: {lessons.length}. Контент пока не прошёл редактуру
               преподавателем грузинского. Кириллическая запись приблизительна;
               приложение не проверяет произношение.
             </p>

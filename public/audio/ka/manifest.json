@@ -320,6 +320,86 @@
     "file": "dd2fc3afe7029a86.mp3"
   },
   {
+    "text": "ერთი",
+    "spokenText": "ერთი",
+    "file": "5686249cf4b630d0.mp3"
+  },
+  {
+    "text": "ორი",
+    "spokenText": "ორი",
+    "file": "897e4c491a91e19d.mp3"
+  },
+  {
+    "text": "სამი",
+    "spokenText": "სამი",
+    "file": "3c4ed808a4abd3bc.mp3"
+  },
+  {
+    "text": "ოთხი",
+    "spokenText": "ოთხი",
+    "file": "d899cea3033ad05b.mp3"
+  },
+  {
+    "text": "ხუთი",
+    "spokenText": "ხუთი",
+    "file": "abeca8513b4149bd.mp3"
+  },
+  {
+    "text": "ექვსი",
+    "spokenText": "ექვსი",
+    "file": "c0a692bf70f45b0b.mp3"
+  },
+  {
+    "text": "შვიდი",
+    "spokenText": "შვიდი",
+    "file": "8213071673d2ba01.mp3"
+  },
+  {
+    "text": "რვა",
+    "spokenText": "რვა",
+    "file": "7fffc3eb3bda4745.mp3"
+  },
+  {
+    "text": "ცხრა",
+    "spokenText": "ცხრა",
+    "file": "4a43f005362faf6e.mp3"
+  },
+  {
+    "text": "ათი",
+    "spokenText": "ათი",
+    "file": "a53963eb98aa63b1.mp3"
+  },
+  {
+    "text": "ერთი პატარა ყავა, თუ შეიძლება",
+    "spokenText": "ერთი პატარა ყავა, თუ შეიძლება",
+    "file": "4b83706eb463d7ce.mp3"
+  },
+  {
+    "text": "ორი პონჩიკი, თუ შეიძლება",
+    "spokenText": "ორი პონჩიკი, თუ შეიძლება",
+    "file": "8c0b80a6dc0147ef.mp3"
+  },
+  {
+    "text": "აქედან ორი მომეცით, თუ შეიძლება",
+    "spokenText": "აქედან ორი მომეცით, თუ შეიძლება",
+    "file": "29e7361eef5570e5.mp3"
+  },
+  {
+    "text": "იქიდან ორი მომეცით, თუ შეიძლება",
+    "spokenText": "იქიდან ორი მომეცით, თუ შეიძლება",
+    "file": "7538c23044f4e3aa.mp3"
+  },
+  {
+    "text": "აქედან ორი და იქიდან ორი მომეცით, თუ შეიძლება",
+    "spokenText": "აქედან ორი და იქიდან ორი მომეცით, თუ შეიძლება",
+    "file": "16045fd835f7133b.mp3"
+  },
+  {
+    "text": "ერთი პატარა ყავა და ორი პონჩიკი, თუ შეიძლება",
+    "spokenText": "ერთი პატარა ყავა და ორი პონჩიკი, თუ შეიძლება",
+    "file": "18561a96ca23133b.mp3"
+  },
+  {
     "text": "გამარჯობა!",
     "spokenText": "გამარჯობა!",
     "file": "3f3b01e6b8eeaae0.mp3"
@@ -365,11 +445,6 @@
     "file": "90501a5bdbe88ce5.mp3"
   },
   {
-    "text": "ერთი",
-    "spokenText": "ერთი",
-    "file": "5686249cf4b630d0.mp3"
-  },
-  {
     "text": "ვარდი",
     "spokenText": "ვარდი",
     "file": "d35db778e2bc8357.mp3"
@@ -403,11 +478,6 @@
     "text": "ნავი",
     "spokenText": "ნავი",
     "file": "0699f6c4c7c50edb.mp3"
-  },
-  {
-    "text": "ორი",
-    "spokenText": "ორი",
-    "file": "897e4c491a91e19d.mp3"
   },
   {
     "text": "ჟოლო",
