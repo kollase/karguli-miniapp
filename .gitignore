@@ -3,3 +3,10 @@ dist
 *.tsbuildinfo
 .DS_Store
 .sites
+
+# Local credentials and environment settings
+.env
+.env.*
+!.env.example
+*.pem
+*.key
