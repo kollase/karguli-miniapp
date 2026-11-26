@@ -2,7 +2,7 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { chunkBank, matchesChunks } from "./chunks.ts";
 import { phraseChunks } from "../data/lessons.ts";
-import { assemblyAnswer, assemblyHint, freshProgress, parseProgress } from "./progress.ts";
+import { exerciseAnswer, exerciseHint, freshProgress, parseProgress } from "./progress.ts";
 
 test("chunk banks preserve every tile and do not start with the complete answer in order", () => {
   for (const [id, chunks] of Object.entries(phraseChunks)) {
@@ -31,20 +31,20 @@ function session() {
   return p;
 }
 test("assisted assembly survives reload and cannot earn an unassisted answer or mastery", () => {
-  const hinted = parseProgress(JSON.stringify(assemblyHint(session(), "assembly")));
-  const p = assemblyAnswer(hinted, "assembly", "thanks", true, "2026-11-26");
+  const hinted = parseProgress(JSON.stringify(exerciseHint(session(), "assembly")));
+  const p = exerciseAnswer(hinted, "assembly", "thanks", true, "2026-11-26");
   assert.deepEqual(p.active?.correct, []);
   assert.deepEqual(p.active?.errors, ["assembly"]);
   assert.equal(p.phrases.thanks.level, 0);
   assert.equal(p.phrases.thanks.due, "2026-11-26");
 });
 test("assembly retries cannot manufacture first-attempt points; unassisted answers count once", () => {
-  const wrong = assemblyAnswer(session(), "assembly", "thanks", false, "2026-11-26");
-  const retry = assemblyAnswer(parseProgress(JSON.stringify(wrong)), "assembly", "thanks", true, "2026-11-26");
+  const wrong = exerciseAnswer(session(), "assembly", "thanks", false, "2026-11-26");
+  const retry = exerciseAnswer(parseProgress(JSON.stringify(wrong)), "assembly", "thanks", true, "2026-11-26");
   assert.deepEqual(retry.active?.correct, []);
   assert.equal(retry.phrases.thanks.level, 0);
-  let right = assemblyAnswer(session(), "assembly", "thanks", true, "2026-11-26");
-  right = assemblyAnswer(right, "assembly", "thanks", true, "2026-11-26");
+  let right = exerciseAnswer(session(), "assembly", "thanks", true, "2026-11-26");
+  right = exerciseAnswer(right, "assembly", "thanks", true, "2026-11-26");
   assert.deepEqual(right.active?.correct, ["assembly"]);
   assert.equal(right.phrases.thanks.level, 1);
 });

@@ -181,12 +181,12 @@ export function confirmLetterPractice(p: Progress, letters: string[]): Progress 
   return { ...p, checkedLetters: [...new Set([...p.checkedLetters, ...letters])] };
 }
 
-export function assemblyHint(p: Progress, stepId: string): Progress {
+export function exerciseHint(p: Progress, stepId: string): Progress {
   if (!p.active) return p;
   return { ...p, active: { ...p.active, errors: [...new Set([...p.active.errors, stepId])] } };
 }
 
-export function assemblyAnswer(
+export function exerciseAnswer(
   p: Progress,
   stepId: string,
   phraseId: string,

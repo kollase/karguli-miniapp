@@ -8,6 +8,8 @@ import {
   complete,
   confirmLetterPractice,
   addDays,
+  exerciseHint,
+  exerciseAnswer,
 } from "./progress.ts";
 test("damaged storage and invalid nested values recover safely", () => {
   assert.deepEqual(parseProgress("{broken"), freshProgress());
@@ -94,4 +96,30 @@ test("legacy letter unlocks preserve phrase progress without claiming letter kno
   assert.deepEqual(parseProgress(JSON.stringify(checked)).checkedLetters, ["ა", "მ"]);
   assert.deepEqual(confirmLetterPractice(checked, ["ა", "მ"]).checkedLetters, ["ა", "მ"]);
   assert.deepEqual(parseProgress(JSON.stringify({ ...checked, checkedLetters: ["ა", "ა", "bad"] })).checkedLetters, ["ა"]);
+});
+
+
+test("quiz transcription remains assistance after reload and only affects its own question", () => {
+  let p = freshProgress();
+  p.active = { lessonId: "basics-1", index: 2, correct: [], errors: [] };
+  p = exerciseHint(p, "quiz-hello");
+  p = exerciseHint(p, "quiz-hello");
+  p = parseProgress(JSON.stringify(p));
+  p = exerciseAnswer(p, "quiz-hello", "hello", true, "2026-11-26");
+  assert.deepEqual(p.active?.correct, []);
+  assert.deepEqual(p.active?.errors, ["quiz-hello"]);
+  assert.equal(p.phrases.hello.level, 0);
+  assert.equal(p.phrases.hello.due, "2026-11-26");
+  p = exerciseAnswer(p, "quiz-thanks", "thanks", true, "2026-11-26");
+  assert.deepEqual(p.active?.correct, ["quiz-thanks"]);
+  assert.equal(p.phrases.thanks.level, 1);
+});
+
+test("a mistaken quiz answer followed by a correct retry after reload cannot earn mastery", () => {
+  let p = freshProgress();
+  p.active = { lessonId: "review", index: 0, correct: [], errors: [] };
+  p = exerciseAnswer(p, "review-hello", "hello", false, "2026-11-26");
+  p = exerciseAnswer(parseProgress(JSON.stringify(p)), "review-hello", "hello", true, "2026-11-26");
+  assert.deepEqual(p.active?.correct, []);
+  assert.equal(p.phrases.hello.level, 0);
 });

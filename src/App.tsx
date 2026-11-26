@@ -39,9 +39,8 @@ import {
   type Step,
 } from "./data/lessons";
 import {
-  answer,
-  assemblyAnswer,
-  assemblyHint,
+  exerciseAnswer,
+  exerciseHint,
   complete,
   confirmLetterPractice,
   encounter,
@@ -308,6 +307,7 @@ export default function App() {
     [search, setSearch] = useState(""),
     [filter, setFilter] = useState("all"),
     [letterFilter, setLetterFilter] = useState("Все"),
+    [showTranscription, setShowTranscription] = useState(false),
     [selected, setSelected] = useState<string | null>(null),
     [result, setResult] = useState<{
       correct: number;
@@ -409,6 +409,7 @@ export default function App() {
       setPage("learn");
       setResult(null);
       setSelected(null);
+      setShowTranscription(false);
     } else setPage("learn");
   };
   useEffect(() => {
@@ -460,6 +461,7 @@ export default function App() {
       active: { lessonId: lesson.id, index: 0, correct: [], errors: [] },
     }));
     setSelected(null);
+    setShowTranscription(false);
     setResult(null);
     setScenario(null);
     setPage("lesson");
@@ -469,6 +471,7 @@ export default function App() {
     if (active && steps.length && active.index < steps.length) {
       setResult(null);
       setSelected(null);
+      setShowTranscription(false);
       setPage("lesson");
     } else
       start(
@@ -489,6 +492,7 @@ export default function App() {
     }));
     setResult(null);
     setSelected(null);
+    setShowTranscription(false);
     setPage("lesson");
     window.scrollTo(0, 0);
   };
@@ -512,6 +516,7 @@ export default function App() {
     } else
       setProgress({ ...p, active: { ...active, index: active.index + 1 } });
     setSelected(null);
+    setShowTranscription(false);
     window.scrollTo(0, 0);
   };
   const choose = (id: string) => {
@@ -521,22 +526,7 @@ export default function App() {
     void appAudio.effect(correct ? "correct" : "incorrect");
     haptic(correct);
     setSelected(id);
-    setProgress((p) => {
-      const updated = answer(p, step.phraseId, correct);
-      return {
-        ...updated,
-        active: {
-          ...active,
-          correct:
-            correct && !active.errors.includes(step.id)
-              ? [...new Set([...active.correct, step.id])]
-              : active.correct,
-          errors: correct
-            ? active.errors
-            : [...new Set([...active.errors, step.id])],
-        },
-      };
-    });
+    setProgress((p) => exerciseAnswer(p, step.id, step.phraseId, correct));
   };
   const favorite = (id: string) =>
     setProgress((p) => ({
@@ -559,6 +549,7 @@ export default function App() {
     setPage(p);
     setResult(null);
     setSelected(null);
+    setShowTranscription(false);
     window.scrollTo(0, 0);
   };
   function Georgian({
@@ -1136,8 +1127,7 @@ export default function App() {
                     : "Сегодня вы стали чуть ближе."}
                 </h1>
                 <p>
-                  {result.correct} из {result.total} ответов верно с первой
-                  попытки.
+                  Самостоятельно с первой попытки: {result.correct} из {result.total}.
                   <br />
                   {result.correct < result.total
                     ? "Фразы с ошибками или подсказками остались в повторении."
@@ -1278,9 +1268,9 @@ export default function App() {
                       state={playback}
                       volume={progress.audioVolume}
                       assisted={active.errors.includes(step.id)}
-                      onHint={() => setProgress((p) => assemblyHint(p, step.id))}
+                      onHint={() => setProgress((p) => exerciseHint(p, step.id))}
                       onAttempt={(correct) => {
-                        setProgress((p) => assemblyAnswer(p, step.id, step.phraseId, correct));
+                        setProgress((p) => exerciseAnswer(p, step.id, step.phraseId, correct));
                         setSelected(correct ? step.phraseId : null);
                       }}
                     />
@@ -1312,7 +1302,23 @@ export default function App() {
                         </div>
                       )}
 
-                      <div className="answer-options">
+                      {step.type === "quiz" && (
+                        <button
+                          className="transcription-toggle"
+                          aria-expanded={showTranscription}
+                          aria-controls="quiz-answer-options"
+                          onClick={() => {
+                            if (!showTranscription && !selected) {
+                              setProgress((p) => exerciseHint(p, step.id));
+                            }
+                            setShowTranscription((shown) => !shown);
+                          }}
+                        >
+                          <BookOpen size={17} aria-hidden="true" />
+                          {showTranscription ? "Скрыть транскрипцию" : "Показать транскрипцию"}
+                        </button>
+                      )}
+                      <div className="answer-options" id="quiz-answer-options">
                         {[...step.options]
                           .sort((a, b) => {
                             const hash = (s: string) =>
@@ -1333,8 +1339,15 @@ export default function App() {
                                 onClick={() => choose(id)}
                               >
                                 <span className="option-index">{i + 1}</span>
-                                <span lang={step.type === "sign" ? "ru" : "ka"}>
-                                  {step.type === "sign" ? p.ru : p.ka}
+                                <span>
+                                  <span lang={step.type === "sign" ? "ru" : "ka"}>
+                                    {step.type === "sign" ? p.ru : p.ka}
+                                  </span>
+                                  {step.type === "quiz" && showTranscription && (
+                                    <span className="option-pronunciation" lang="ru">
+                                      {p.pronunciation}
+                                    </span>
+                                  )}
                                 </span>
                                 {selected && correct && <Check size={21} />}
                               </button>
@@ -1348,7 +1361,9 @@ export default function App() {
                         >
                           <strong>
                             {selected === step.phraseId
-                              ? "Да, именно так!"
+                              ? active.errors.includes(step.id)
+                                ? "Верно, с подсказкой!"
+                                : "Да, именно так!"
                               : "Теперь будет легче вспомнить"}
                           </strong>
                           <p>
@@ -1394,7 +1409,11 @@ export default function App() {
                       : step.type === "assemble"
                         ? selected ? "Получилось. Послушайте фразу ещё раз." : "Соберите фразу и нажмите «Проверить»"
                         : selected
-                          ? "Ошибаться — часть знакомства"
+                          ? selected === step.phraseId
+                            ? active.errors.includes(step.id)
+                              ? "Фразу ещё закрепим в повторении"
+                              : "Получилось. Можно идти дальше."
+                            : "Ошибаться — часть знакомства"
                           : "Выберите один ответ"}
                   </span>
                   <button

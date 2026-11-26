@@ -1310,6 +1310,24 @@ h1 {
   letter-spacing: -0.4px;
   margin-bottom: 27px;
 }
+.transcription-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 44px;
+  padding: 8px 4px;
+  margin: -12px 0 12px;
+  color: var(--sage);
+  font-size: 14px;
+  text-align: left;
+}
+.option-pronunciation {
+  display: block;
+  margin-top: 5px;
+  color: var(--muted);
+  font-size: 15px;
+  line-height: 1.5;
+}
 .answer-options {
   display: grid;
   gap: 12px;
