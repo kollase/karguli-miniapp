@@ -29,6 +29,29 @@ test("every exercise has exactly three valid, unique options and its correct ans
       }
     }
 });
+test("lessons only test phrases introduced earlier in the same scenario", () => {
+  for (const lesson of lessons) {
+    const introduced = new Set<string>();
+    for (const step of lesson.steps) {
+      assert.equal(
+        phraseById[step.phraseId].scenario,
+        lesson.scenarioId,
+        `${lesson.id}: ${step.phraseId} belongs to another scenario`,
+      );
+      if (step.type === "study") {
+        introduced.add(step.phraseId);
+      } else {
+        assert.ok(
+          introduced.has(step.phraseId),
+          `${lesson.id}: ${step.phraseId} was tested before being introduced`,
+        );
+        for (const id of step.options)
+          assert.equal(phraseById[id].scenario, lesson.scenarioId);
+        if (step.type === "sign") assert.equal(lesson.scenarioId, "signs");
+      }
+    }
+  }
+});
 test("alphabet contains all 33 distinct Mkhedruli letters with examples", () => {
   assert.equal(alphabet.length, 33);
   assert.equal(new Set(alphabet.map((a) => a.letter)).size, 33);

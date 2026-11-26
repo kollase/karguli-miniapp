@@ -475,20 +475,19 @@ export const lessons: Lesson[] = scenarios.flatMap((s) =>
       }
       return result;
     });
-    const sign = phrases.filter((p) => p.scenario === "signs")[
-      part === 0 ? 1 : 4
-    ];
-    if (s.id !== "signs")
+    if (s.id !== "signs") {
+      // Keep the final step in place for resumable lessons, using a phrase
+      // already introduced in this lesson instead of an unrelated sign.
+      const recap = batch[2];
       steps.push({
-        id: `${s.id}-${part}-sign`,
-        type: "sign",
-        phraseId: sign.id,
-        prompt: "Что написано на вывеске?",
-        options: [sign.id, "pharmacy", "coffee"].filter(
-          (v, i, a) => a.indexOf(v) === i,
-        ),
-        explanation: sign.hint,
+        id: `${s.id}-${part}-recap`,
+        type: "quiz",
+        phraseId: recap.id,
+        prompt: `Повторим: как сказать «${recap.ru}»?`,
+        options: [recap.id, batch[0].id, batch[1].id],
+        explanation: recap.hint,
       });
+    }
     return {
       id: `${s.id}-${part + 1}`,
       scenarioId: s.id,
