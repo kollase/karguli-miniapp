@@ -49,10 +49,9 @@ export function SpeechButton({
           onClick={() => void appAudio.speak(lines, 0.75, volume, true)}
           aria-label={`Повторить медленно: ${label}`}
           aria-pressed={playing && slow}
-          title="Повторить медленно · 0,75×"
+          title="Повторить медленно"
         >
           <Turtle size={24} strokeWidth={1.7} />
-          <span>0,75×</span>
         </button>
         {playing && slow && (
           <button
