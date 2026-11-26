@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "build": "tsc -b && vite build",
-    "test": "node --experimental-strip-types --test --test-isolation=none src/lib/progress.test.ts src/data/lessons.test.ts src/lib/audio.test.ts",
+    "test": "node --experimental-strip-types --test --test-isolation=none src/lib/progress.test.ts src/data/lessons.test.ts src/lib/alphabet.test.ts src/lib/audio.test.ts",
     "preview": "vite preview --host 127.0.0.1"
   },
   "dependencies": {

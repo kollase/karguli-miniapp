@@ -6,6 +6,7 @@ import {
   answer,
   streak,
   complete,
+  confirmLetterPractice,
   addDays,
 } from "./progress.ts";
 test("damaged storage and invalid nested values recover safely", () => {
@@ -75,9 +76,22 @@ test("streak crosses month and year boundaries and tolerates duplicates", () => 
 test("completion is idempotent and clears resumable session", () => {
   let p = freshProgress();
   p.active = { lessonId: "basics-1", index: 2, correct: [], errors: [] };
-  p = complete(p, "basics-1", ["ა", "მ"], "2026-11-26");
-  p = complete(p, "basics-1", ["ა", "მ"], "2026-11-26");
+  p = complete(p, "basics-1", "2026-11-26");
+  p = complete(p, "basics-1", "2026-11-26");
   assert.equal(p.completed.length, 1);
-  assert.equal(p.letters.length, 2);
+  assert.equal(p.checkedLetters.length, 0);
+  assert.equal(p.letters.length, 0);
   assert.equal(p.active, undefined);
+});
+
+test("legacy letter unlocks preserve phrase progress without claiming letter knowledge", () => {
+  const p = parseProgress(JSON.stringify({ version: 1, completed: ["basics-1"], letters: ["ა", "მ"], favorites: ["hello"] }));
+  assert.deepEqual(p.completed, ["basics-1"]);
+  assert.deepEqual(p.favorites, ["hello"]);
+  assert.deepEqual(p.letters, ["ა", "მ"]);
+  assert.deepEqual(p.checkedLetters, []);
+  const checked = confirmLetterPractice(p, ["ა", "მ"]);
+  assert.deepEqual(parseProgress(JSON.stringify(checked)).checkedLetters, ["ა", "მ"]);
+  assert.deepEqual(confirmLetterPractice(checked, ["ა", "მ"]).checkedLetters, ["ა", "მ"]);
+  assert.deepEqual(parseProgress(JSON.stringify({ ...checked, checkedLetters: ["ა", "ა", "bad"] })).checkedLetters, ["ა"]);
 });

@@ -15,7 +15,8 @@ export interface Progress {
   version: 1;
   phrases: Record<string, PhraseProgress>;
   completed: string[];
-  letters: string[];
+  letters: string[]; // Legacy automatic unlocks, retained without counting as practice.
+  checkedLetters: string[];
   favorites: string[];
   activityDays: string[];
   immersion: boolean;
@@ -30,6 +31,7 @@ export const freshProgress = (): Progress => ({
   phrases: {},
   completed: [],
   letters: [],
+  checkedLetters: [],
   favorites: [],
   activityDays: [],
   immersion: true,
@@ -76,6 +78,9 @@ export function parseProgress(raw: string | null): Progress {
       phrases: Object.fromEntries(entries),
       completed: strings(v.completed) ? v.completed : [],
       letters: strings(v.letters) ? v.letters : [],
+      checkedLetters: strings(v.checkedLetters)
+        ? [...new Set<string>(v.checkedLetters)].filter((l) => /^[ა-ჰ]$/.test(l))
+        : [],
       favorites: strings(v.favorites) ? v.favorites : [],
       activityDays: strings(v.activityDays)
         ? v.activityDays.filter(validDay)
@@ -159,7 +164,6 @@ export function streak(days: string[], today = localDay()): number {
 export function complete(
   p: Progress,
   lessonId: string,
-  letters: string[],
   today = localDay(),
 ): Progress {
   return {
@@ -169,7 +173,10 @@ export function complete(
       lessonId === "review"
         ? p.completed
         : [...new Set([...p.completed, lessonId])],
-    letters: [...new Set([...p.letters, ...letters])],
     activityDays: [...new Set([...p.activityDays, today])],
   };
+}
+
+export function confirmLetterPractice(p: Progress, letters: string[]): Progress {
+  return { ...p, checkedLetters: [...new Set([...p.checkedLetters, ...letters])] };
 }

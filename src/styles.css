@@ -2795,3 +2795,32 @@ h1 {
     scroll-behavior: auto !important;
   }
 }
+
+/* Explicit alphabet practice: no progress for simply viewing a phrase. */
+.alphabet-start { margin: 0 0 24px; }
+.alphabet-trainer { text-align: center; padding-top: 8px; }
+.alphabet-trainer h2 { font-size: clamp(23px, 5vw, 30px); line-height: 1.4; margin-top: 18px; }
+.alphabet-trainer p { font-size: 16px; line-height: 1.65; color: var(--muted); }
+.practice-progress { display: flex; align-items: center; gap: 14px; margin: 16px 0; }
+.practice-progress .progress-track { flex: 1; }
+.practice-progress > span { font-size: 14px; color: var(--muted); white-space: nowrap; }
+.practice-symbol { font-size: 88px; line-height: 1.2; color: var(--sage); }
+.alphabet-trainer .practice-sound { font-size: 24px; line-height: 1.5; margin: 10px 0; color: var(--text); }
+.alphabet-trainer .practice-note { font-size: 14px; margin: 18px 0; }
+.letter-example mark { background: var(--sage); color: var(--bg); border-radius: 5px; padding: 0 3px; }
+.alphabet-trainer .letter-example { flex-wrap: wrap; gap: 12px; padding: 14px; margin: 16px 0; }
+.alphabet-trainer .speech-actions { justify-content: center; }
+.letter-options { margin-top: 24px; }
+.letter-options .answer-option { justify-content: center; text-align: center; font-size: 18px; line-height: 1.4; }
+.symbol-options { grid-template-columns: 1fr 1fr; }
+.symbol-options .answer-option { font-size: 48px; min-height: 88px; }
+.practice-next { width: 100%; margin-top: 24px; min-height: 48px; }
+.practice-pair { font-size: 64px; color: var(--sage); margin: 22px 0; }
+.practice-check { color: var(--sage); margin-bottom: 20px; }
+.alphabet-trainer > .primary-button { margin-top: 24px; }
+.new-letters p { font-size: 15px; max-width: 360px; margin: 0 auto 18px; }
+.new-letters > .primary-button { font-family: inherit; font-size: 16px; }
+
+.alphabet-trainer .step-tag { margin-bottom: 0; font-size: 12px; letter-spacing: 1px; }
+.alphabet-trainer h2 { margin: 12px 0; }
+.new-letters > .primary-button { width: 100%; height: auto; min-height: 48px; background: var(--sage); color: var(--bg); }

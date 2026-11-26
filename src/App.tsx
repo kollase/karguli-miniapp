@@ -41,6 +41,7 @@ import {
 import {
   answer,
   complete,
+  confirmLetterPractice,
   encounter,
   freshProgress,
   localDay,
@@ -52,6 +53,8 @@ import {
 import { haptic, telegram } from "./lib/telegram";
 import { appAudio, type PlaybackState } from "./lib/audio";
 import { SpeechButton } from "./components/SpeechButton";
+import { AlphabetTrainer } from "./components/AlphabetTrainer";
+import { alphabetPair } from "./lib/alphabet";
 
 type Page = "learn" | "cheat" | "alphabet" | "lesson";
 const scenarioIcons = {
@@ -293,6 +296,7 @@ export default function App() {
     [scenario, setScenario] = useState<ScenarioId | null>(null),
     [shown, setShown] = useState<Phrase | null>(null),
     [letter, setLetter] = useState<AlphabetLetter | null>(null),
+    [trainingLetters, setTrainingLetters] = useState<string[] | null>(null),
     [info, setInfo] = useState(false),
     [audioOpen, setAudioOpen] = useState(false),
     [copied, setCopied] = useState(false),
@@ -330,6 +334,7 @@ export default function App() {
     info,
     scenario,
     letter,
+    trainingLetters,
   ]);
   useEffect(() => {
     const hide = () => {
@@ -388,6 +393,7 @@ export default function App() {
   const closeModal = () => {
     setShown(null);
     setLetter(null);
+    setTrainingLetters(null);
     setScenario(null);
     setInfo(false);
     setAudioOpen(false);
@@ -395,7 +401,7 @@ export default function App() {
     setCopyError(false);
   };
   const back = () => {
-    if (shown || letter || scenario || info || audioOpen) closeModal();
+    if (shown || letter || trainingLetters || scenario || info || audioOpen) closeModal();
     else if (page === "lesson") {
       setPage("learn");
       setResult(null);
@@ -409,6 +415,7 @@ export default function App() {
       page !== "learn" ||
       !!shown ||
       !!letter ||
+      !!trainingLetters ||
       !!scenario ||
       info ||
       audioOpen;
@@ -489,15 +496,16 @@ export default function App() {
     let p = progress;
     if (step.type === "study") p = encounter(p, step.phraseId);
     if (active.index + 1 >= steps.length) {
-      const letters =
-        currentLesson?.letters.filter((l) => !p.letters.includes(l)) ?? [];
+      const letters = currentLesson?.letters.some((l) => !p.checkedLetters.includes(l))
+        ? currentLesson.letters
+        : [];
       setResult({
         correct: active.correct.length,
         total: steps.filter((s) => s.type !== "study").length,
         letters,
         review: active.lessonId === "review",
       });
-      setProgress(complete(p, active.lessonId, currentLesson?.letters ?? []));
+      setProgress(complete(p, active.lessonId));
     } else
       setProgress({ ...p, active: { ...active, index: active.index + 1 } });
     setSelected(null);
@@ -563,7 +571,7 @@ export default function App() {
         className={large ? "georgian large-georgian" : "georgian"}
       >
         {Array.from(text).map((char, i) =>
-          progress.immersion && progress.letters.includes(char) ? (
+          progress.immersion && progress.checkedLetters.includes(char) ? (
             <button
               key={i}
               className="known-letter"
@@ -773,10 +781,10 @@ export default function App() {
                   </span>
                   <div>
                     <strong>
-                      {progress.letters.length}
+                      {progress.checkedLetters.length}
                       <span> / 33</span>
                     </strong>
-                    <p>букв открыли</p>
+                    <p>букв проверили</p>
                   </div>
                 </div>
               </section>
@@ -1044,20 +1052,26 @@ export default function App() {
               <div className="alphabet-summary">
                 <div>
                   <Sparkles size={25} />
-                  <strong>{progress.letters.length} из 33 букв открыто</strong>
+                  <strong>{progress.checkedLetters.length} из 33 букв проверено</strong>
                 </div>
                 <p>
-                  Все буквы можно посмотреть уже сейчас. Цветом отмечены те, что
-                  встретились в пройденных уроках.
+                  Цветом отмечены буквы, которые вы узнали в двух проверках. Это
+                  первый шаг к чтению, а не оценка владения алфавитом.
                 </p>
                 <div className="progress-track">
                   <span
                     style={{
-                      width: `${(progress.letters.length / 33) * 100}%`,
+                      width: `${(progress.checkedLetters.length / 33) * 100}%`,
                     }}
                   />
                 </div>
               </div>
+              <button className="primary-button alphabet-start" onClick={() => {
+                const nextLetter = alphabet.find((a) => !progress.checkedLetters.includes(a.letter)) ?? alphabet[0];
+                setTrainingLetters(alphabetPair(nextLetter.letter));
+              }}>
+                {progress.checkedLetters.length ? "Продолжить практику букв" : "Начать с двух букв"}
+              </button>
               <div className="filter-row">
                 {[
                   "Все",
@@ -1083,15 +1097,15 @@ export default function App() {
                   .map((a) => (
                     <button
                       key={a.letter}
-                      className={`letter-card ${progress.letters.includes(a.letter) ? "unlocked" : ""}`}
+                      className={`letter-card ${progress.checkedLetters.includes(a.letter) ? "unlocked" : ""}`}
                       onClick={() => setLetter(a)}
-                      aria-label={`Буква ${a.letter}: ${a.sound}. ${progress.letters.includes(a.letter) ? "Открыта" : "Познакомиться"}`}
+                      aria-label={`Буква ${a.letter}: ${a.sound}. ${progress.checkedLetters.includes(a.letter) ? "Проверена" : "Познакомиться"}`}
                     >
                       <span lang="ka">{a.letter}</span>
                       <small>
                         {a.sound.length > 20 ? "особый звук" : a.sound}
                       </small>
-                      {progress.letters.includes(a.letter) && (
+                      {progress.checkedLetters.includes(a.letter) && (
                         <Check size={14} />
                       )}
                     </button>
@@ -1128,20 +1142,21 @@ export default function App() {
                 </p>
                 {!!result.letters.length && (
                   <div className="new-letters">
-                    <span>Новые знакомые</span>
+                    <span>Теперь познакомимся с буквами?</span>
                     <div>
                       {result.letters.map((l) => (
                         <button
                           key={l}
                           lang="ka"
-                          onClick={() =>
-                            setLetter(alphabet.find((a) => a.letter === l)!)
-                          }
+                          onClick={() => setTrainingLetters(result.letters)}
+                          aria-label={`Потренировать буквы ${result.letters.join(" и ")}`}
                         >
                           {l}
                         </button>
                       ))}
                     </div>
+                    <p>Ещё один маленький шаг: посмотрите, как звучат эти буквы, и попробуйте узнать их.</p>
+                    <button className="primary-button" onClick={() => setTrainingLetters(result.letters)}>Буквы: знакомство и проверка</button>
                   </div>
                 )}
                 <button
@@ -1465,14 +1480,14 @@ export default function App() {
             {letter.letter}
           </span>
           <span className="tag">
-            {progress.letters.includes(letter.letter)
-              ? "УЖЕ ЗНАКОМАЯ"
+            {progress.checkedLetters.includes(letter.letter)
+              ? "ПЕРВАЯ ПРОВЕРКА ПРОЙДЕНА"
               : "ПОЗНАКОМИМСЯ?"}
           </span>
           <h2>{letter.sound}</h2>
           <p className="letter-group">{letter.group}</p>
           <div className="letter-example">
-            <span lang="ka">{letter.word}</span>
+            <span lang="ka">{Array.from(letter.word).map((char, i) => char === letter.letter ? <mark key={i}>{char}</mark> : char)}</span>
             <span>{letter.meaning}</span>
           </div>
           <SpeechButton
@@ -1486,6 +1501,22 @@ export default function App() {
               ? "У этого звука нет точного русского аналога. Текстовая подсказка поможет узнать букву, но не заменит практику произношения."
               : "Обозначение звука на русском — подсказка для начала. Ищите эту букву в знакомых грузинских словах."}
           </p>
+          <button className="primary-button" onClick={() => {
+            setTrainingLetters(alphabetPair(letter.letter));
+            setLetter(null);
+          }}>Потренировать эту букву</button>
+        </Modal>
+      )}
+      {trainingLetters && (
+        <Modal onClose={closeModal} label="Практика букв">
+          <AlphabetTrainer
+            key={trainingLetters.join("")}
+            letters={trainingLetters}
+            state={playback}
+            volume={progress.audioVolume}
+            onComplete={(checked) => setProgress((p) => confirmLetterPractice(p, checked))}
+            onClose={closeModal}
+          />
         </Modal>
       )}
       {info && (
